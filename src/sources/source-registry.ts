@@ -30,9 +30,9 @@ export function getSourceVersionCode(version: string): string {
 }
 
 export const SUPPORTED_VERSIONS = [
-  { code: 'GAE', label: '개역개정 (GAE)' },
-  { code: 'KRV', label: '개역한글 (KRV)' },
-  { code: 'NIR', label: '새번역 (NIR)' },
-  { code: 'ESV', label: 'ESV' },
-  { code: 'KJV', label: 'KJV' },
+  { code: 'GAE', label: '개역개정 (GAE)', language: 'ko' as const },
+  { code: 'KRV', label: '개역한글 (KRV)', language: 'ko' as const },
+  { code: 'NIR', label: '새번역 (NIR)', language: 'ko' as const },
+  { code: 'ESV', label: 'ESV', language: 'en' as const },
+  { code: 'KJV', label: 'KJV', language: 'en' as const },
 ]

@@ -3,11 +3,12 @@ import { BibleBookEntry, BIBLE_BOOKS } from '../data/book-map'
 import { BibleSuggestion } from './bible-suggestion'
 import { parseModalInput } from './parse-modal-input'
 import { ParsedReference } from '../utils/reference-parser'
-import { formatVerses } from '../utils/formatter'
+import { formatVerses, ExtraVerses } from '../utils/formatter'
 import { getSource, getSourceVersionCode } from '../sources/source-registry'
 import { VerseCache } from '../cache/verse-cache'
 import { VerseData } from '../sources/types'
 import { BibleSearchSettings } from '../plugin-settings'
+import { detectRequiredFetches } from '../utils/resolve-template'
 
 const PREVIEW_MAX_LEN = 60
 
@@ -49,6 +50,28 @@ function buildChapterSuggestions(
   return items
 }
 
+async function fetchChapterVerses(
+  version: string,
+  bookNr: number,
+  chapter: number,
+  cache: VerseCache,
+  cacheEnabled: boolean,
+): Promise<VerseData[]> {
+  const sourceVersion = getSourceVersionCode(version)
+  const source = getSource(version)
+
+  if (cacheEnabled) {
+    const cached = cache.get(version, bookNr, chapter)
+    if (cached) return cached
+  }
+
+  const verses = await source.fetchChapter(sourceVersion, bookNr, chapter)
+  if (cacheEnabled) {
+    cache.set(version, bookNr, chapter, verses)
+  }
+  return verses
+}
+
 export class BibleSearchModal extends SuggestModal<BibleSuggestion> {
   private editor: Editor
   private settings: BibleSearchSettings
@@ -82,24 +105,14 @@ export class BibleSearchModal extends SuggestModal<BibleSuggestion> {
     if (this.chapterCache?.key === cacheKey) {
       verses = this.chapterCache.verses
     } else {
-      const version = this.settings.defaultVersion
-      const sourceVersion = getSourceVersionCode(version)
-      const source = getSource(version)
-
-      verses = this.settings.cacheEnabled
-        ? this.cache.get(version, book.nr, chapter)
-        : null
-
-      if (!verses) {
-        try {
-          verses = await source.fetchChapter(sourceVersion, book.nr, chapter)
-          if (this.settings.cacheEnabled) {
-            this.cache.set(version, book.nr, chapter, verses)
-          }
-        } catch (err) {
-          new Notice(`Failed to fetch ${book.ko} ${chapter}: ${err instanceof Error ? err.message : String(err)}`)
-          return []
-        }
+      try {
+        verses = await fetchChapterVerses(
+          this.settings.defaultVersion, book.nr, chapter,
+          this.cache, this.settings.cacheEnabled,
+        )
+      } catch (err) {
+        new Notice(`Failed to fetch ${book.ko} ${chapter}: ${err instanceof Error ? err.message : String(err)}`)
+        return []
       }
 
       this.chapterCache = { key: cacheKey, verses }
@@ -204,26 +217,19 @@ export class BibleSearchModal extends SuggestModal<BibleSuggestion> {
 
     try {
       const version = this.settings.defaultVersion
-      const sourceVersion = getSourceVersionCode(version)
-      const source = getSource(version)
       const cacheKey = `${item.book.nr}:${item.chapter}`
 
+      // Fetch default version verses
       let allVerses: VerseData[] | null = null
       if (this.chapterCache?.key === cacheKey) {
         allVerses = this.chapterCache.verses
       }
 
       if (!allVerses) {
-        allVerses = this.settings.cacheEnabled
-          ? this.cache.get(version, ref.bookNr, ref.chapter)
-          : null
-      }
-
-      if (!allVerses) {
-        allVerses = await source.fetchChapter(sourceVersion, ref.bookNr, ref.chapter)
-        if (this.settings.cacheEnabled) {
-          this.cache.set(version, ref.bookNr, ref.chapter, allVerses)
-        }
+        allVerses = await fetchChapterVerses(
+          version, ref.bookNr, ref.chapter,
+          this.cache, this.settings.cacheEnabled,
+        )
       }
 
       const selected = allVerses.filter(v => v.verse >= ref.verseStart && v.verse <= ref.verseEnd)
@@ -232,7 +238,40 @@ export class BibleSearchModal extends SuggestModal<BibleSuggestion> {
         return
       }
 
-      const formatted = formatVerses(selected, ref, this.settings)
+      // Detect which extra fetches the template needs
+      const required = detectRequiredFetches(this.settings.formatTemplate)
+      const extraVerses: ExtraVerses = {}
+      const fetches: Promise<void>[] = []
+
+      const queueExtraFetch = (
+        extraVersion: string,
+        assign: (verses: VerseData[]) => void,
+      ) => {
+        if (extraVersion === version) {
+          assign(selected)
+        } else {
+          fetches.push(
+            fetchChapterVerses(extraVersion, ref.bookNr, ref.chapter, this.cache, this.settings.cacheEnabled)
+              .then(all => assign(all.filter(v => v.verse >= ref.verseStart && v.verse <= ref.verseEnd))),
+          )
+        }
+      }
+
+      if (required.needsKorean) {
+        queueExtraFetch(this.settings.koreanVersion, v => { extraVerses.korean = v })
+      }
+      if (required.needsEnglish) {
+        queueExtraFetch(this.settings.englishVersion, v => { extraVerses.english = v })
+      }
+
+      const results = await Promise.allSettled(fetches)
+      for (const r of results) {
+        if (r.status === 'rejected') {
+          new Notice(`Failed to fetch extra version: ${r.reason instanceof Error ? r.reason.message : String(r.reason)}`)
+        }
+      }
+
+      const formatted = formatVerses(selected, ref, this.settings, extraVerses)
       this.editor.replaceSelection(formatted)
     } catch (error) {
       new Notice(`Failed to fetch verse: ${error instanceof Error ? error.message : String(error)}`)
