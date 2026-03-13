@@ -1,5 +1,5 @@
-import { Editor, Plugin } from 'obsidian'
-import { BibleSearchSettings, DEFAULT_SETTINGS } from './plugin-settings'
+import { Editor, Notice, Plugin } from 'obsidian'
+import { BibleSearchSettings, DEFAULT_FORMAT_TEMPLATE, DEFAULT_SETTINGS } from './plugin-settings'
 import { BibleSearchModal } from './ui/BibleSearchModal'
 import { BibleSettingsTab } from './ui/BibleSettingsTab'
 import { VerseCache } from './cache/verse-cache'
@@ -24,10 +24,45 @@ export default class BibleSearchPlugin extends Plugin {
   }
 
   async loadSettings(): Promise<void> {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData())
+    let data: Record<string, unknown> = {}
+    try {
+      data = (await this.loadData()) ?? {}
+    } catch (err) {
+      console.error('[bible-search] Failed to load settings, using defaults:', err)
+      new Notice('Bible Search: Failed to load settings. Using defaults.')
+    }
+
+    // Migrate legacy outputFormat (pre-v1.2) → formatTemplate.
+    // Only 'blockquote' needs an explicit template; 'callout' maps to the new default.
+    let migrated = false
+    if ('outputFormat' in data && !('formatTemplate' in data)) {
+      if (data.outputFormat === 'blockquote') {
+        data.formatTemplate = '> {verses}\n> — {bookKo} ({bookEn}) {range}'
+      } else if (data.outputFormat !== 'callout') {
+        console.warn(`[bible-search] Unknown outputFormat "${data.outputFormat}", using default template`)
+        data.formatTemplate = DEFAULT_FORMAT_TEMPLATE
+      }
+      delete data.outputFormat
+      migrated = true
+    }
+
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, data)
+
+    if (migrated) {
+      try {
+        await this.saveData(this.settings)
+      } catch (err) {
+        console.error('[bible-search] Failed to persist migration:', err)
+      }
+    }
   }
 
   async saveSettings(): Promise<void> {
-    await this.saveData(this.settings)
+    try {
+      await this.saveData(this.settings)
+    } catch (err) {
+      console.error('[bible-search] Failed to save settings:', err)
+      new Notice('Bible Search: Failed to save settings.')
+    }
   }
 }

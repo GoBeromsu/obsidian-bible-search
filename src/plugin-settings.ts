@@ -1,6 +1,9 @@
+export const DEFAULT_FORMAT_TEMPLATE =
+  '> [!{calloutType}] {bookKo} ({bookEn}) {range}\n> {verses}'
+
 export interface BibleSearchSettings {
   defaultVersion: string
-  outputFormat: 'callout' | 'blockquote'
+  formatTemplate: string
   calloutType: string
   showVerseNumbers: boolean
   cacheEnabled: boolean
@@ -9,7 +12,7 @@ export interface BibleSearchSettings {
 
 export const DEFAULT_SETTINGS: BibleSearchSettings = {
   defaultVersion: 'GAE',
-  outputFormat: 'callout',
+  formatTemplate: DEFAULT_FORMAT_TEMPLATE,
   calloutType: 'bible',
   showVerseNumbers: true,
   cacheEnabled: true,
