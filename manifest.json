@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-bible-search",
 	"name": "Bible Search",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
 	"description": "Search Korean/English Bible verses and insert as callout or blockquote.",
 	"author": "Beomsu Koh",

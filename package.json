@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-bible-search",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Search Korean/English Bible verses and insert as callout or blockquote.",
 	"main": "main.js",
 	"type": "module",
