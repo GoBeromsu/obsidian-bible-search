@@ -1,5 +1,5 @@
-import { App, FuzzySuggestModal, Notice, Editor } from 'obsidian'
-import { BibleBookEntry, BIBLE_BOOKS } from '../data/book-map'
+import { App, SuggestModal, Notice, Editor } from 'obsidian'
+import { BibleBookEntry, BIBLE_BOOKS, findBook } from '../data/book-map'
 import { ParsedReference } from '../utils/reference-parser'
 import { formatVerses } from '../utils/formatter'
 import { getSource, getSourceVersionCode } from '../sources/source-registry'
@@ -8,7 +8,24 @@ import { BibleSearchSettings } from '../plugin-settings'
 
 const CHAPTER_VERSE_RE = /(\d+):(\d+)(?:-(\d+))?\s*$/
 
-export class BibleSearchModal extends FuzzySuggestModal<BibleBookEntry> {
+function extractBookQuery(input: string): string {
+  const trimmed = input.trim()
+  const cvMatch = trimmed.match(CHAPTER_VERSE_RE)
+  if (!cvMatch) return trimmed
+  return trimmed.slice(0, trimmed.length - cvMatch[0].length).trim()
+}
+
+function fuzzyMatch(query: string, text: string): boolean {
+  const q = query.toLowerCase()
+  const t = text.toLowerCase()
+  let qi = 0
+  for (let ti = 0; ti < t.length && qi < q.length; ti++) {
+    if (q[qi] === t[ti]) qi++
+  }
+  return qi === q.length
+}
+
+export class BibleSearchModal extends SuggestModal<BibleBookEntry> {
   private editor: Editor
   private settings: BibleSearchSettings
   private cache: VerseCache
@@ -21,17 +38,28 @@ export class BibleSearchModal extends FuzzySuggestModal<BibleBookEntry> {
     this.setPlaceholder('Type a Bible reference (e.g. 요 3:16, John 3:16)')
   }
 
-  getItems(): BibleBookEntry[] {
-    return BIBLE_BOOKS
+  getSuggestions(query: string): BibleBookEntry[] {
+    const bookQuery = extractBookQuery(query)
+    if (!bookQuery) return BIBLE_BOOKS
+
+    // Exact match first
+    const exact = findBook(bookQuery)
+    if (exact) return [exact]
+
+    // Fuzzy match against all name fields
+    return BIBLE_BOOKS.filter(b =>
+      fuzzyMatch(bookQuery, b.ko) ||
+      fuzzyMatch(bookQuery, b.koAbbr) ||
+      fuzzyMatch(bookQuery, b.en) ||
+      fuzzyMatch(bookQuery, b.enAbbr),
+    )
   }
 
-  getItemText(item: BibleBookEntry): string {
-    return `${item.ko} (${item.en})`
+  renderSuggestion(item: BibleBookEntry, el: HTMLElement): void {
+    el.createEl('span', { text: `${item.ko} (${item.en})` })
   }
 
-  async onChooseItem(item: BibleBookEntry): Promise<void> {
-    // Use item (the fuzzy-selected book) directly — don't re-parse the book from input
-    // Only extract chapter:verse from the raw input text
+  async onChooseSuggestion(item: BibleBookEntry): Promise<void> {
     const input = this.inputEl.value
     const cvMatch = input.match(CHAPTER_VERSE_RE)
     if (!cvMatch) {

@@ -32,6 +32,20 @@ export class FuzzySuggestModal<T> {
   getItemText(_item: T): string { return '' }
   onChooseItem(_item: T, _evt: MouseEvent | KeyboardEvent): void {}
 }
+export class SuggestModal<T> {
+  app: App
+  inputEl: { value: string }
+  constructor(_app: App) {
+    this.app = _app
+    this.inputEl = { value: '' }
+  }
+  open() {}
+  close() {}
+  setPlaceholder(_text: string) {}
+  getSuggestions(_query: string): T[] { return [] }
+  renderSuggestion(_item: T, _el: HTMLElement): void {}
+  onChooseSuggestion(_item: T, _evt: MouseEvent | KeyboardEvent): void {}
+}
 export class PluginSettingTab {
   app: App
   plugin: any
