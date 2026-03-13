@@ -34,16 +34,22 @@ export class FuzzySuggestModal<T> {
 }
 export class SuggestModal<T> {
   app: App
-  inputEl: { value: string }
+  inputEl: HTMLInputElement
+  emptyStateText: string = ''
   constructor(_app: App) {
     this.app = _app
-    this.inputEl = { value: '' }
+    this.inputEl = {
+      value: '',
+      setSelectionRange(_start: number, _end: number) {},
+      dispatchEvent(_evt: Event) { return true },
+    } as unknown as HTMLInputElement
   }
   open() {}
   close() {}
   setPlaceholder(_text: string) {}
-  getSuggestions(_query: string): T[] { return [] }
+  getSuggestions(_query: string): T[] | Promise<T[]> { return [] }
   renderSuggestion(_item: T, _el: HTMLElement): void {}
+  selectSuggestion(_item: T, _evt: MouseEvent | KeyboardEvent): void { this.close() }
   onChooseSuggestion(_item: T, _evt: MouseEvent | KeyboardEvent): void {}
 }
 export class PluginSettingTab {
