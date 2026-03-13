@@ -3,7 +3,7 @@
 	"name": "Bible Search",
 	"version": "1.1.0",
 	"minAppVersion": "0.15.0",
-	"description": "Search Korean/English Bible verses and insert as callout or blockquote.",
+	"description": "Search Korean/English Bible verses and insert with configurable template format.",
 	"author": "Beomsu Koh",
 	"authorUrl": "https://beromkoh.medium.com",
 	"fundingUrl": "buymeacoffee.com/gobeumsu9",
