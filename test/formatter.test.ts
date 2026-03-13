@@ -16,12 +16,12 @@ const GEN_1_1_2_REF: ParsedReference = { bookNr: 1, bookKo: '창세기', bookEn:
 const GEN_1_1_3_REF: ParsedReference = { bookNr: 1, bookKo: '창세기', bookEn: 'Genesis', chapter: 1, verseStart: 1, verseEnd: 3 }
 
 describe('formatVerses', () => {
-  describe('callout format', () => {
+  describe('default callout template', () => {
     it('single verse — no verse number even if showVerseNumbers is true', () => {
       const result = formatVerses(
         [JOHN_3_16],
         JOHN_REF,
-        { ...DEFAULT_SETTINGS, outputFormat: 'callout', showVerseNumbers: true },
+        { ...DEFAULT_SETTINGS, showVerseNumbers: true },
       )
       expect(result).toBe(
         '> [!bible] 요한복음 (John) 3:16\n> 하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니...',
@@ -32,7 +32,7 @@ describe('formatVerses', () => {
       const result = formatVerses(
         [JOHN_3_16],
         JOHN_REF,
-        { ...DEFAULT_SETTINGS, outputFormat: 'callout' },
+        DEFAULT_SETTINGS,
       )
       expect(result).toContain('3:16')
       expect(result).not.toContain('3:16-16')
@@ -42,7 +42,7 @@ describe('formatVerses', () => {
       const result = formatVerses(
         [GENESIS_1_1, GENESIS_1_2, GENESIS_1_3],
         GEN_1_1_3_REF,
-        { ...DEFAULT_SETTINGS, outputFormat: 'callout', showVerseNumbers: true },
+        { ...DEFAULT_SETTINGS, showVerseNumbers: true },
       )
       expect(result).toBe(
         '> [!bible] 창세기 (Genesis) 1:1-3\n' +
@@ -56,7 +56,7 @@ describe('formatVerses', () => {
       const result = formatVerses(
         [GENESIS_1_1, GENESIS_1_2],
         GEN_1_1_2_REF,
-        { ...DEFAULT_SETTINGS, outputFormat: 'callout', showVerseNumbers: false },
+        { ...DEFAULT_SETTINGS, showVerseNumbers: false },
       )
       expect(result).toBe(
         '> [!bible] 창세기 (Genesis) 1:1-2\n' +
@@ -69,7 +69,7 @@ describe('formatVerses', () => {
       const result = formatVerses(
         [JOHN_3_16],
         JOHN_REF,
-        { ...DEFAULT_SETTINGS, outputFormat: 'callout', calloutType: 'quote' },
+        { ...DEFAULT_SETTINGS, calloutType: 'quote' },
       )
       expect(result).toContain('[!quote]')
       expect(result).not.toContain('[!bible]')
@@ -79,18 +79,23 @@ describe('formatVerses', () => {
       const result = formatVerses(
         [GENESIS_1_1, GENESIS_1_2, GENESIS_1_3],
         GEN_1_1_3_REF,
-        { ...DEFAULT_SETTINGS, outputFormat: 'callout' },
+        DEFAULT_SETTINGS,
       )
       expect(result).toContain('1:1-3')
     })
   })
 
-  describe('blockquote format', () => {
+  describe('blockquote-style template', () => {
+    const blockquoteSettings = {
+      ...DEFAULT_SETTINGS,
+      formatTemplate: '> {verses}\n> — {bookKo} ({bookEn}) {range}',
+    }
+
     it('single verse — citation at end, no verse number', () => {
       const result = formatVerses(
         [GENESIS_1_1],
         GEN_1_1_REF,
-        { ...DEFAULT_SETTINGS, outputFormat: 'blockquote', showVerseNumbers: true },
+        { ...blockquoteSettings, showVerseNumbers: true },
       )
       expect(result).toBe(
         '> 태초에 하나님이 천지를 창조하시니라\n' +
@@ -102,7 +107,7 @@ describe('formatVerses', () => {
       const result = formatVerses(
         [GENESIS_1_1, GENESIS_1_2],
         GEN_1_1_2_REF,
-        { ...DEFAULT_SETTINGS, outputFormat: 'blockquote', showVerseNumbers: true },
+        { ...blockquoteSettings, showVerseNumbers: true },
       )
       expect(result).toBe(
         '> **1** 태초에 하나님이 천지를 창조하시니라\n' +
@@ -115,7 +120,7 @@ describe('formatVerses', () => {
       const result = formatVerses(
         [GENESIS_1_1, GENESIS_1_2],
         GEN_1_1_2_REF,
-        { ...DEFAULT_SETTINGS, outputFormat: 'blockquote', showVerseNumbers: false },
+        { ...blockquoteSettings, showVerseNumbers: false },
       )
       expect(result).toBe(
         '> 태초에 하나님이 천지를 창조하시니라\n' +
@@ -128,9 +133,20 @@ describe('formatVerses', () => {
       const result = formatVerses(
         [GENESIS_1_1, GENESIS_1_2],
         GEN_1_1_2_REF,
-        { ...DEFAULT_SETTINGS, outputFormat: 'blockquote' },
+        blockquoteSettings,
       )
       expect(result).toContain('1:1-2')
+    })
+  })
+
+  describe('custom templates', () => {
+    it('plain text template without blockquote prefix', () => {
+      const result = formatVerses(
+        [JOHN_3_16],
+        JOHN_REF,
+        { ...DEFAULT_SETTINGS, formatTemplate: '{bookEn} {range}\n{verses}' },
+      )
+      expect(result).toBe('John 3:16\n하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니...')
     })
   })
 })

@@ -1,5 +1,6 @@
-import { App, PluginSettingTab, Setting } from 'obsidian'
+import { App, debounce, PluginSettingTab, Setting } from 'obsidian'
 import { SUPPORTED_VERSIONS } from '../sources/source-registry'
+import { DEFAULT_FORMAT_TEMPLATE } from '../plugin-settings'
 import type BibleSearchPlugin from '../main'
 
 export class BibleSettingsTab extends PluginSettingTab {
@@ -29,21 +30,26 @@ export class BibleSettingsTab extends PluginSettingTab {
       })
 
     new Setting(containerEl)
-      .setName('Output format')
-      .setDesc('How to format the inserted verse')
-      .addDropdown(dropdown => {
-        dropdown.addOption('callout', 'Callout')
-        dropdown.addOption('blockquote', 'Blockquote')
-        dropdown.setValue(this.plugin.settings.outputFormat)
-        dropdown.onChange(async (value: 'callout' | 'blockquote') => {
-          this.plugin.settings.outputFormat = value
-          await this.plugin.saveSettings()
+      .setName('Format template')
+      .setDesc(
+        'Template for inserted verses. Available tokens: ' +
+        '{bookKo}, {bookEn}, {chapter}, {range}, {verses}, {version}, {calloutType}',
+      )
+      .addTextArea(textArea => {
+        textArea.setPlaceholder(DEFAULT_FORMAT_TEMPLATE)
+        textArea.setValue(this.plugin.settings.formatTemplate)
+        textArea.inputEl.rows = 4
+        textArea.inputEl.cols = 50
+        const debouncedSave = debounce(() => this.plugin.saveSettings(), 500, true)
+        textArea.onChange((value) => {
+          this.plugin.settings.formatTemplate = value || DEFAULT_FORMAT_TEMPLATE
+          debouncedSave()
         })
       })
 
     new Setting(containerEl)
       .setName('Callout type')
-      .setDesc('The callout type identifier (e.g. bible, quote)')
+      .setDesc('The callout type identifier used by {calloutType} token (e.g. bible, quote)')
       .addText(text => {
         text.setPlaceholder('bible')
         text.setValue(this.plugin.settings.calloutType)
