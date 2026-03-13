@@ -16,7 +16,7 @@ const GEN_1_1_2_REF: ParsedReference = { bookNr: 1, bookKo: '창세기', bookEn:
 const GEN_1_1_3_REF: ParsedReference = { bookNr: 1, bookKo: '창세기', bookEn: 'Genesis', chapter: 1, verseStart: 1, verseEnd: 3 }
 
 describe('formatVerses', () => {
-  describe('default callout template', () => {
+  describe('default blockquote template', () => {
     it('single verse — no verse number even if showVerseNumbers is true', () => {
       const result = formatVerses(
         [JOHN_3_16],
@@ -24,7 +24,7 @@ describe('formatVerses', () => {
         { ...DEFAULT_SETTINGS, showVerseNumbers: true },
       )
       expect(result).toBe(
-        '> [!bible] 요한복음 (John) 3:16\n> 하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니...',
+        '> 요한복음 (John) 3:16\n> 하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니...',
       )
     })
 
@@ -45,7 +45,7 @@ describe('formatVerses', () => {
         { ...DEFAULT_SETTINGS, showVerseNumbers: true },
       )
       expect(result).toBe(
-        '> [!bible] 창세기 (Genesis) 1:1-3\n' +
+        '> 창세기 (Genesis) 1:1-3\n' +
         '> **1** 태초에 하나님이 천지를 창조하시니라\n' +
         '> **2** 땅이 혼돈하고 공허하며...\n' +
         '> **3** 하나님이 이르시되 빛이 있으라 하시니 빛이 있었고',
@@ -59,17 +59,17 @@ describe('formatVerses', () => {
         { ...DEFAULT_SETTINGS, showVerseNumbers: false },
       )
       expect(result).toBe(
-        '> [!bible] 창세기 (Genesis) 1:1-2\n' +
+        '> 창세기 (Genesis) 1:1-2\n' +
         '> 태초에 하나님이 천지를 창조하시니라\n' +
         '> 땅이 혼돈하고 공허하며...',
       )
     })
 
-    it('custom callout type is used instead of "bible"', () => {
+    it('custom callout type via explicit template', () => {
       const result = formatVerses(
         [JOHN_3_16],
         JOHN_REF,
-        { ...DEFAULT_SETTINGS, calloutType: 'quote' },
+        { ...DEFAULT_SETTINGS, formatTemplate: '> [!{calloutType}] {range}\n> {verses}', calloutType: 'quote' },
       )
       expect(result).toContain('[!quote]')
       expect(result).not.toContain('[!bible]')

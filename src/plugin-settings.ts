@@ -1,5 +1,5 @@
 export const DEFAULT_FORMAT_TEMPLATE =
-  '> [!{calloutType}] {bookKo} ({bookEn}) {range}\n> {verses}'
+  '> {bookKo} ({bookEn}) {range}\n> {verses}'
 
 export interface BibleSearchSettings {
   defaultVersion: string

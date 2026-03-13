@@ -1,4 +1,4 @@
-import { BibleBookEntry, findBook } from '../data/book-map'
+import { BibleBookEntry, findBookBestMatch } from '../data/book-map'
 
 export type ModalInputState =
   | { mode: 'book'; query: string }
@@ -9,6 +9,27 @@ export type ModalInputState =
 const CHAPTER_ONLY_RE = /^(.+?)\s+(\d+)$/
 // Matches: "<book> <digits>:<optional-digits><optional -digits>" — verse mode
 const VERSE_RE = /^(.+?)\s+(\d+):(\d*)(?:-(\d*))?$/
+// Korean suffix patterns: 장 (chapter), 절 (verse)
+const KOREAN_FULL_RE = /^(.+?)\s+(\d+)장\s*(\d+)(?:-(\d+))?절$/
+const KOREAN_VERSE_ONLY_RE = /^(.+?)\s+(\d+)절$/
+const KOREAN_CHAPTER_RE = /^(.+?)\s+(\d+)장$/
+
+/** Try matching a regex and resolving the book from capture group 1. */
+function tryMatch(
+  text: string,
+  re: RegExp,
+): { book: BibleBookEntry; groups: RegExpMatchArray } | undefined {
+  const m = text.match(re)
+  if (!m) return undefined
+  const book = findBookBestMatch(m[1])
+  if (!book) return undefined
+  return { book, groups: m }
+}
+
+/** Parse a capture group as an integer, returning undefined for missing/empty groups. */
+function parseOptionalInt(value: string | undefined): number | undefined {
+  return value && value !== '' ? parseInt(value, 10) : undefined
+}
 
 export function parseModalInput(input: string): ModalInputState {
   const trimmed = input.trim()
@@ -17,43 +38,56 @@ export function parseModalInput(input: string): ModalInputState {
     return { mode: 'book', query: '' }
   }
 
-  // Try verse mode first (has colon)
-  if (trimmed.includes(':')) {
-    const verseMatch = trimmed.match(VERSE_RE)
-    if (verseMatch) {
-      const bookPart = verseMatch[1]
-      const chapterStr = verseMatch[2]
-      const verseFilter = verseMatch[3] ?? ''
-      const rangeEndStr = verseMatch[4]
+  // Korean full: "요한복음 3장 16절", "요한복음 3장 1-3절"
+  const koreanFull = tryMatch(trimmed, KOREAN_FULL_RE)
+  if (koreanFull) {
+    const { book, groups } = koreanFull
+    return {
+      mode: 'verse',
+      book,
+      chapter: parseInt(groups[2], 10),
+      filter: groups[3],
+      rangeEnd: parseOptionalInt(groups[4]),
+    }
+  }
 
-      const book = findBook(bookPart)
-      if (book) {
-        const chapter = parseInt(chapterStr, 10)
-        const rangeEnd = rangeEndStr !== undefined && rangeEndStr !== ''
-          ? parseInt(rangeEndStr, 10)
-          : undefined
-        return { mode: 'verse', book, chapter, filter: verseFilter, rangeEnd }
+  // Colon-based verse: "요한복음 3:16", "Gen 1:1-5"
+  if (trimmed.includes(':')) {
+    const verse = tryMatch(trimmed, VERSE_RE)
+    if (verse) {
+      const { book, groups } = verse
+      return {
+        mode: 'verse',
+        book,
+        chapter: parseInt(groups[2], 10),
+        filter: groups[3] ?? '',
+        rangeEnd: parseOptionalInt(groups[4]),
       }
     }
   }
 
-  // Try chapter mode (digits, no colon)
-  const chapterMatch = trimmed.match(CHAPTER_ONLY_RE)
-  if (chapterMatch) {
-    const bookPart = chapterMatch[1]
-    const chapterFilter = chapterMatch[2]
-
-    const book = findBook(bookPart)
-    if (book) {
-      return { mode: 'chapter', book, filter: chapterFilter }
-    }
+  // Korean verse-only: "요한복음 3절" -> chapter N, show all verses
+  const koreanVerseOnly = tryMatch(trimmed, KOREAN_VERSE_ONLY_RE)
+  if (koreanVerseOnly) {
+    const { book, groups } = koreanVerseOnly
+    return { mode: 'verse', book, chapter: parseInt(groups[2], 10), filter: '' }
   }
 
-  // Check if input ends with a space after a recognized book (chapter mode, empty filter)
-  // e.g. "창세기 " — trailing space after exact book name
+  // Korean chapter: "요한복음 3장"
+  const koreanChapter = tryMatch(trimmed, KOREAN_CHAPTER_RE)
+  if (koreanChapter) {
+    return { mode: 'chapter', book: koreanChapter.book, filter: koreanChapter.groups[2] }
+  }
+
+  // Plain chapter: "창세기 1", "John 3"
+  const chapter = tryMatch(trimmed, CHAPTER_ONLY_RE)
+  if (chapter) {
+    return { mode: 'chapter', book: chapter.book, filter: chapter.groups[2] }
+  }
+
+  // Trailing space after a recognized book: "창세기 " -> chapter mode, empty filter
   if (input.endsWith(' ')) {
-    const bookPart = trimmed
-    const book = findBook(bookPart)
+    const book = findBookBestMatch(trimmed)
     if (book) {
       return { mode: 'chapter', book, filter: '' }
     }

@@ -69,7 +69,7 @@ describe('resolveTemplate', () => {
   it('empty/whitespace template falls back to default', () => {
     const result = resolveTemplate('   ', BASE_CTX)
     expect(result).toBe(
-      '> [!bible] 요한복음 (John) 3:16\n' +
+      '> 요한복음 (John) 3:16\n' +
       '> 하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니...',
     )
   })
