@@ -91,3 +91,23 @@ export function findBook(query: string): BibleBookEntry | undefined {
       b.enAbbr.toLowerCase() === lower,
   )
 }
+
+export function findBookBestMatch(query: string): BibleBookEntry | undefined {
+  const trimmed = query.trim()
+  if (!trimmed) return undefined
+
+  const exact = findBook(trimmed)
+  if (exact) return exact
+
+  const lower = trimmed.toLowerCase()
+
+  const prefixMatches = BIBLE_BOOKS.filter(
+    (b) =>
+      b.ko.startsWith(trimmed) ||
+      b.koAbbr.startsWith(trimmed) ||
+      b.en.toLowerCase().startsWith(lower) ||
+      b.enAbbr.toLowerCase().startsWith(lower),
+  )
+
+  return prefixMatches.length === 1 ? prefixMatches[0] : undefined
+}

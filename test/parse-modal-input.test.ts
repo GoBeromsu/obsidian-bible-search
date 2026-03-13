@@ -192,6 +192,117 @@ describe('parseModalInput', () => {
     })
   })
 
+  describe('Korean chapter suffix (장)', () => {
+    it('returns chapter mode for "요한복음 3장"', () => {
+      const result = parseModalInput('요한복음 3장')
+      expect(result.mode).toBe('chapter')
+      if (result.mode === 'chapter') {
+        expect(result.book.ko).toBe('요한복음')
+        expect(result.filter).toBe('3')
+      }
+    })
+
+    it('returns chapter mode for "창세기 10장"', () => {
+      const result = parseModalInput('창세기 10장')
+      expect(result.mode).toBe('chapter')
+      if (result.mode === 'chapter') {
+        expect(result.book.ko).toBe('창세기')
+        expect(result.filter).toBe('10')
+      }
+    })
+
+    it('returns chapter mode for abbreviation "요 3장"', () => {
+      const result = parseModalInput('요 3장')
+      expect(result.mode).toBe('chapter')
+      if (result.mode === 'chapter') {
+        expect(result.book.ko).toBe('요한복음')
+        expect(result.filter).toBe('3')
+      }
+    })
+  })
+
+  describe('Korean full suffix (장 절)', () => {
+    it('returns verse mode for "요한복음 3장 16절"', () => {
+      const result = parseModalInput('요한복음 3장 16절')
+      expect(result.mode).toBe('verse')
+      if (result.mode === 'verse') {
+        expect(result.book.ko).toBe('요한복음')
+        expect(result.chapter).toBe(3)
+        expect(result.filter).toBe('16')
+        expect(result.rangeEnd).toBeUndefined()
+      }
+    })
+
+    it('returns verse mode with range for "요한복음 3장 1-3절"', () => {
+      const result = parseModalInput('요한복음 3장 1-3절')
+      expect(result.mode).toBe('verse')
+      if (result.mode === 'verse') {
+        expect(result.book.ko).toBe('요한복음')
+        expect(result.chapter).toBe(3)
+        expect(result.filter).toBe('1')
+        expect(result.rangeEnd).toBe(3)
+      }
+    })
+
+    it('returns verse mode for mixed "Gen 3장 16절"', () => {
+      const result = parseModalInput('Gen 3장 16절')
+      expect(result.mode).toBe('verse')
+      if (result.mode === 'verse') {
+        expect(result.book.nr).toBe(1)
+        expect(result.chapter).toBe(3)
+        expect(result.filter).toBe('16')
+      }
+    })
+  })
+
+  describe('Korean verse-only suffix (절)', () => {
+    it('returns verse mode for "요한복음 3절"', () => {
+      const result = parseModalInput('요한복음 3절')
+      expect(result.mode).toBe('verse')
+      if (result.mode === 'verse') {
+        expect(result.book.ko).toBe('요한복음')
+        expect(result.chapter).toBe(3)
+        expect(result.filter).toBe('')
+      }
+    })
+
+    it('returns verse mode for abbreviation "창 1절"', () => {
+      const result = parseModalInput('창 1절')
+      expect(result.mode).toBe('verse')
+      if (result.mode === 'verse') {
+        expect(result.book.ko).toBe('창세기')
+        expect(result.chapter).toBe(1)
+        expect(result.filter).toBe('')
+      }
+    })
+  })
+
+  describe('prefix matching in parse', () => {
+    it('returns chapter mode for prefix match "Genesi 1"', () => {
+      const result = parseModalInput('Genesi 1')
+      expect(result.mode).toBe('chapter')
+      if (result.mode === 'chapter') {
+        expect(result.book.en).toBe('Genesis')
+        expect(result.filter).toBe('1')
+      }
+    })
+
+    it('returns verse mode for prefix match "요한복 3:"', () => {
+      const result = parseModalInput('요한복 3:')
+      expect(result.mode).toBe('verse')
+      if (result.mode === 'verse') {
+        expect(result.book.ko).toBe('요한복음')
+        expect(result.chapter).toBe(3)
+        expect(result.filter).toBe('')
+      }
+    })
+
+    it('falls through to book mode when prefix is ambiguous "요한 3"', () => {
+      const result = parseModalInput('요한 3')
+      expect(result.mode).toBe('book')
+    })
+  })
+
   describe('single-chapter books', () => {
     it('parses 오바댜 (maxChapter=1) in chapter filter mode', () => {
       const result = parseModalInput('오바댜 ')
