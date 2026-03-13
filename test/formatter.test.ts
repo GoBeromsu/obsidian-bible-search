@@ -15,13 +15,17 @@ const GEN_1_1_REF: ParsedReference = { bookNr: 1, bookKo: '창세기', bookEn: '
 const GEN_1_1_2_REF: ParsedReference = { bookNr: 1, bookKo: '창세기', bookEn: 'Genesis', chapter: 1, verseStart: 1, verseEnd: 2 }
 const GEN_1_1_3_REF: ParsedReference = { bookNr: 1, bookKo: '창세기', bookEn: 'Genesis', chapter: 1, verseStart: 1, verseEnd: 3 }
 
+const CLASSIC_TEMPLATE = '> {bookKo} ({bookEn}) {range}\n> {verses}'
+
 describe('formatVerses', () => {
-  describe('default blockquote template', () => {
+  describe('classic blockquote template', () => {
+    const classicSettings = { ...DEFAULT_SETTINGS, formatTemplate: CLASSIC_TEMPLATE }
+
     it('single verse — no verse number even if showVerseNumbers is true', () => {
       const result = formatVerses(
         [JOHN_3_16],
         JOHN_REF,
-        { ...DEFAULT_SETTINGS, showVerseNumbers: true },
+        { ...classicSettings, showVerseNumbers: true },
       )
       expect(result).toBe(
         '> 요한복음 (John) 3:16\n> 하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니...',
@@ -32,7 +36,7 @@ describe('formatVerses', () => {
       const result = formatVerses(
         [JOHN_3_16],
         JOHN_REF,
-        DEFAULT_SETTINGS,
+        classicSettings,
       )
       expect(result).toContain('3:16')
       expect(result).not.toContain('3:16-16')
@@ -42,7 +46,7 @@ describe('formatVerses', () => {
       const result = formatVerses(
         [GENESIS_1_1, GENESIS_1_2, GENESIS_1_3],
         GEN_1_1_3_REF,
-        { ...DEFAULT_SETTINGS, showVerseNumbers: true },
+        { ...classicSettings, showVerseNumbers: true },
       )
       expect(result).toBe(
         '> 창세기 (Genesis) 1:1-3\n' +
@@ -56,7 +60,7 @@ describe('formatVerses', () => {
       const result = formatVerses(
         [GENESIS_1_1, GENESIS_1_2],
         GEN_1_1_2_REF,
-        { ...DEFAULT_SETTINGS, showVerseNumbers: false },
+        { ...classicSettings, showVerseNumbers: false },
       )
       expect(result).toBe(
         '> 창세기 (Genesis) 1:1-2\n' +
@@ -69,7 +73,7 @@ describe('formatVerses', () => {
       const result = formatVerses(
         [JOHN_3_16],
         JOHN_REF,
-        { ...DEFAULT_SETTINGS, formatTemplate: '> [!{calloutType}] {range}\n> {verses}', calloutType: 'quote' },
+        { ...classicSettings, formatTemplate: '> [!{calloutType}] {range}\n> {verses}', calloutType: 'quote' },
       )
       expect(result).toContain('[!quote]')
       expect(result).not.toContain('[!bible]')
@@ -79,7 +83,7 @@ describe('formatVerses', () => {
       const result = formatVerses(
         [GENESIS_1_1, GENESIS_1_2, GENESIS_1_3],
         GEN_1_1_3_REF,
-        DEFAULT_SETTINGS,
+        classicSettings,
       )
       expect(result).toContain('1:1-3')
     })
@@ -147,6 +151,103 @@ describe('formatVerses', () => {
         { ...DEFAULT_SETTINGS, formatTemplate: '{bookEn} {range}\n{verses}' },
       )
       expect(result).toBe('John 3:16\n하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니...')
+    })
+  })
+
+  describe('extraVerses — bilingual templates', () => {
+    const JOHN_EN: VerseData = { chapter: 3, verse: 16, text: 'For God so loved the world...' }
+    const GEN_EN_1: VerseData = { chapter: 1, verse: 1, text: 'In the beginning God created...' }
+    const GEN_EN_2: VerseData = { chapter: 1, verse: 2, text: 'And the earth was without form...' }
+
+    it('bilingual template with {versesKo} and {versesEn}', () => {
+      const settings = {
+        ...DEFAULT_SETTINGS,
+        koreanVersion: 'GAE',
+        englishVersion: 'ESV',
+        formatTemplate: '> [[{bookEn} {chapter}]]:{range}\n> {versesKo}\n>\n> {versesEn}',
+      }
+      const result = formatVerses(
+        [JOHN_3_16],
+        JOHN_REF,
+        settings,
+        { korean: [JOHN_3_16], english: [JOHN_EN] },
+      )
+      expect(result).toBe(
+        '> [[John 3]]:3:16\n' +
+        '> 하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니...\n' +
+        '>\n' +
+        '> For God so loved the world...',
+      )
+    })
+
+    it('extraVerses.korean only — {versesEn} line skipped', () => {
+      const settings = {
+        ...DEFAULT_SETTINGS,
+        koreanVersion: 'GAE',
+        formatTemplate: '> {versesKo}\n> {versesEn}',
+      }
+      const result = formatVerses(
+        [JOHN_3_16],
+        JOHN_REF,
+        settings,
+        { korean: [JOHN_3_16] },
+      )
+      expect(result).toBe(
+        '> 하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니...',
+      )
+    })
+
+    it('extraVerses with multi-verse applies showVerseNumbers', () => {
+      const settings = {
+        ...DEFAULT_SETTINGS,
+        koreanVersion: 'GAE',
+        englishVersion: 'ESV',
+        showVerseNumbers: true,
+        formatTemplate: '> {versesKo}\n> {versesEn}',
+      }
+      const result = formatVerses(
+        [GENESIS_1_1, GENESIS_1_2],
+        GEN_1_1_2_REF,
+        settings,
+        { korean: [GENESIS_1_1, GENESIS_1_2], english: [GEN_EN_1, GEN_EN_2] },
+      )
+      expect(result).toBe(
+        '> **1** 태초에 하나님이 천지를 창조하시니라\n' +
+        '> **2** 땅이 혼돈하고 공허하며...\n' +
+        '> **1** In the beginning God created...\n' +
+        '> **2** And the earth was without form...',
+      )
+    })
+
+    it('no extraVerses — backward compatible with explicit {verses} template', () => {
+      const result = formatVerses(
+        [JOHN_3_16],
+        JOHN_REF,
+        { ...DEFAULT_SETTINGS, formatTemplate: CLASSIC_TEMPLATE },
+      )
+      expect(result).toBe(
+        '> 요한복음 (John) 3:16\n> 하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니...',
+      )
+    })
+
+    it('versionKo and versionEn scalars are populated from settings', () => {
+      const settings = {
+        ...DEFAULT_SETTINGS,
+        koreanVersion: 'KRV',
+        englishVersion: 'KJV',
+        formatTemplate: '{versionKo} / {versionEn}\n{versesKo}\n{versesEn}',
+      }
+      const result = formatVerses(
+        [JOHN_3_16],
+        JOHN_REF,
+        settings,
+        { korean: [JOHN_3_16], english: [JOHN_EN] },
+      )
+      expect(result).toBe(
+        'KRV / KJV\n' +
+        '하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니...\n' +
+        'For God so loved the world...',
+      )
     })
   })
 })

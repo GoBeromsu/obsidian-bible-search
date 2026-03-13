@@ -3,6 +3,9 @@ import { SUPPORTED_VERSIONS } from '../sources/source-registry'
 import { DEFAULT_FORMAT_TEMPLATE } from '../plugin-settings'
 import type BibleSearchPlugin from '../main'
 
+const KOREAN_VERSIONS = SUPPORTED_VERSIONS.filter(v => v.language === 'ko')
+const ENGLISH_VERSIONS = SUPPORTED_VERSIONS.filter(v => v.language === 'en')
+
 export class BibleSettingsTab extends PluginSettingTab {
   plugin: BibleSearchPlugin
 
@@ -16,8 +19,8 @@ export class BibleSettingsTab extends PluginSettingTab {
     containerEl.empty()
 
     new Setting(containerEl)
-      .setName('Default Bible version')
-      .setDesc('Select the default Bible version for searches')
+      .setName('기본 역본 (Default version)')
+      .setDesc('Select the default Bible version for searches and {verses} token')
       .addDropdown(dropdown => {
         for (const v of SUPPORTED_VERSIONS) {
           dropdown.addOption(v.code, v.label)
@@ -30,10 +33,39 @@ export class BibleSettingsTab extends PluginSettingTab {
       })
 
     new Setting(containerEl)
+      .setName('한국어 성경 (Korean Bible)')
+      .setDesc('Korean version for {versesKo} token')
+      .addDropdown(dropdown => {
+        for (const v of KOREAN_VERSIONS) {
+          dropdown.addOption(v.code, v.label)
+        }
+        dropdown.setValue(this.plugin.settings.koreanVersion)
+        dropdown.onChange(async (value) => {
+          this.plugin.settings.koreanVersion = value
+          await this.plugin.saveSettings()
+        })
+      })
+
+    new Setting(containerEl)
+      .setName('영어 성경 (English Bible)')
+      .setDesc('English version for {versesEn} token')
+      .addDropdown(dropdown => {
+        for (const v of ENGLISH_VERSIONS) {
+          dropdown.addOption(v.code, v.label)
+        }
+        dropdown.setValue(this.plugin.settings.englishVersion)
+        dropdown.onChange(async (value) => {
+          this.plugin.settings.englishVersion = value
+          await this.plugin.saveSettings()
+        })
+      })
+
+    new Setting(containerEl)
       .setName('Format template')
       .setDesc(
         'Template for inserted verses. Available tokens: ' +
-        '{bookKo}, {bookEn}, {chapter}, {range}, {verses}, {version}, {calloutType}',
+        '{bookKo}, {bookEn}, {chapter}, {range}, {verses}, {versesKo}, {versesEn}, ' +
+        '{version}, {versionKo}, {versionEn}, {calloutType}',
       )
       .addTextArea(textArea => {
         textArea.setPlaceholder(DEFAULT_FORMAT_TEMPLATE)
