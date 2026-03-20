@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
 import { describe, it, expect } from 'vitest'
-import { parseBollsResponse, stripBollsTags } from '../src/sources/bolls-api'
+import { parseBollsResponse, stripBollsTags } from '../src/ui/sources/bolls-api'
 
 const fixtureData: Array<{ pk: number; verse: number; text: string }> = JSON.parse(
   readFileSync(resolve(__dirname, 'fixtures/bolls-john-3.json'), 'utf-8'),

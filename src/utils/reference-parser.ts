@@ -1,4 +1,4 @@
-import { findBook } from '../data/book-map'
+import { findBook } from '../domain/book-map'
 
 export interface ParsedReference {
   bookNr: number

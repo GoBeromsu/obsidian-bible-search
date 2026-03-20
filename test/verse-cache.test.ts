@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { VerseCache } from '../src/cache/verse-cache'
-import type { VerseData } from '../src/sources/types'
+import { VerseCache } from '../src/domain/verse-cache'
+import type { VerseData } from '../src/types/index'
 
 const sampleVerses: VerseData[] = [
   { chapter: 1, verse: 1, text: 'In the beginning God created the heavens and the earth.' },

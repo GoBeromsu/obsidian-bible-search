@@ -5,8 +5,8 @@ import { fileURLToPath } from 'url'
 import { JSDOM } from 'jsdom'
 import { beforeAll, describe, expect, it } from 'vitest'
 
-import { parseVerses } from '../src/sources/bskorea-scraper'
-import type { VerseData } from '../src/sources/types'
+import { parseVerses } from '../src/ui/sources/bskorea-scraper'
+import type { VerseData } from '../src/types/index'
 
 const dom = new JSDOM('')
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

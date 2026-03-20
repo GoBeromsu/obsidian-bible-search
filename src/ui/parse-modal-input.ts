@@ -1,4 +1,4 @@
-import { BibleBookEntry, findBookBestMatch } from '../data/book-map'
+import { BibleBookEntry, findBookBestMatch } from '../domain/book-map'
 
 export type ModalInputState =
   | { mode: 'book'; query: string }

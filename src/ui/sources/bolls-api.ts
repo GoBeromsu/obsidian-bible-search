@@ -1,5 +1,5 @@
 import { requestUrl } from 'obsidian'
-import { BibleSource, VerseData } from './types'
+import { BibleSource, VerseData } from '../../types/index'
 
 export class BollsApi implements BibleSource {
   async fetchChapter(versionCode: string, bookNr: number, chapter: number): Promise<VerseData[]> {

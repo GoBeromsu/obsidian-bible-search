@@ -1,4 +1,4 @@
-import { BibleBookEntry } from '../data/book-map'
+import { BibleBookEntry } from '../domain/book-map'
 
 export type BibleSuggestion =
   | { type: 'book'; book: BibleBookEntry }
