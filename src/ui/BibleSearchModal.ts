@@ -1,4 +1,4 @@
-import { App, SuggestModal, Notice, Editor } from 'obsidian'
+import { App, SuggestModal, Editor } from 'obsidian'
 import { BibleBookEntry, BIBLE_BOOKS } from '../data/book-map'
 import { BibleSuggestion } from './bible-suggestion'
 import { parseModalInput } from './parse-modal-input'
@@ -9,6 +9,7 @@ import { VerseCache } from '../cache/verse-cache'
 import { VerseData } from '../sources/types'
 import { BibleSearchSettings } from '../plugin-settings'
 import { detectRequiredFetches } from '../utils/resolve-template'
+import { PluginNotices } from '../shared/plugin-notices'
 
 const PREVIEW_MAX_LEN = 60
 
@@ -76,13 +77,21 @@ export class BibleSearchModal extends SuggestModal<BibleSuggestion> {
   private editor: Editor
   private settings: BibleSearchSettings
   private cache: VerseCache
+  private notices: PluginNotices
   private chapterCache: { key: string; verses: VerseData[] } | null = null
 
-  constructor(app: App, editor: Editor, settings: BibleSearchSettings, cache: VerseCache) {
+  constructor(
+    app: App,
+    editor: Editor,
+    settings: BibleSearchSettings,
+    cache: VerseCache,
+    notices: PluginNotices,
+  ) {
     super(app)
     this.editor = editor
     this.settings = settings
     this.cache = cache
+    this.notices = notices
     this.setPlaceholder('Type a Bible book, chapter, or verse (e.g. 요, 창세기 3, 요 3:16)')
   }
 
@@ -111,7 +120,11 @@ export class BibleSearchModal extends SuggestModal<BibleSuggestion> {
           this.cache, this.settings.cacheEnabled,
         )
       } catch (err) {
-        new Notice(`Failed to fetch ${book.ko} ${chapter}: ${err instanceof Error ? err.message : String(err)}`)
+        this.notices.show('fetch_chapter_failed', {
+          bookKo: book.ko,
+          chapter,
+          error: err instanceof Error ? err.message : String(err),
+        })
         return []
       }
 
@@ -234,7 +247,12 @@ export class BibleSearchModal extends SuggestModal<BibleSuggestion> {
 
       const selected = allVerses.filter(v => v.verse >= ref.verseStart && v.verse <= ref.verseEnd)
       if (selected.length === 0) {
-        new Notice(`No verses found for ${ref.bookKo} ${ref.chapter}:${ref.verseStart}-${ref.verseEnd}`)
+        this.notices.show('no_verses_found', {
+          bookKo: ref.bookKo,
+          chapter: ref.chapter,
+          verseStart: ref.verseStart,
+          verseEnd: ref.verseEnd,
+        })
         return
       }
 
@@ -267,14 +285,18 @@ export class BibleSearchModal extends SuggestModal<BibleSuggestion> {
       const results = await Promise.allSettled(fetches)
       for (const r of results) {
         if (r.status === 'rejected') {
-          new Notice(`Failed to fetch extra version: ${r.reason instanceof Error ? r.reason.message : String(r.reason)}`)
+          this.notices.show('fetch_extra_version_failed', {
+            error: r.reason instanceof Error ? r.reason.message : String(r.reason),
+          })
         }
       }
 
       const formatted = formatVerses(selected, ref, this.settings, extraVerses)
       this.editor.replaceSelection(formatted)
     } catch (error) {
-      new Notice(`Failed to fetch verse: ${error instanceof Error ? error.message : String(error)}`)
+      this.notices.show('fetch_verse_failed', {
+        error: error instanceof Error ? error.message : String(error),
+      })
     }
   }
 }

@@ -10,6 +10,8 @@ export interface BibleSearchSettings {
   showVerseNumbers: boolean
   cacheEnabled: boolean
   cacheTtlMinutes: number
+  plugin_notices: { muted: Record<string, boolean> }
+  [key: string]: unknown
 }
 
 export const DEFAULT_SETTINGS: BibleSearchSettings = {
@@ -21,4 +23,5 @@ export const DEFAULT_SETTINGS: BibleSearchSettings = {
   showVerseNumbers: true,
   cacheEnabled: true,
   cacheTtlMinutes: 30,
+  plugin_notices: { muted: {} },
 }

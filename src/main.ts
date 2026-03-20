@@ -4,54 +4,94 @@ import { BibleSearchModal } from './ui/BibleSearchModal'
 import { BibleSettingsTab } from './ui/BibleSettingsTab'
 import { VerseCache } from './cache/verse-cache'
 import { PluginLogger } from './shared/plugin-logger'
+import { PluginNotices, NoticeCatalog } from './shared/plugin-notices'
+import { migrateSettings } from './shared/settings-migration'
 
 const logger = new PluginLogger('bible-search')
+
+const NOTICE_CATALOG: NoticeCatalog = {
+  load_settings_failed: {
+    template: 'Failed to load settings. Using defaults.',
+    timeout: 6000,
+  },
+  save_settings_failed: {
+    template: 'Failed to save settings.',
+    timeout: 6000,
+  },
+  fetch_chapter_failed: {
+    template: 'Failed to fetch {{bookKo}} {{chapter}}: {{error}}',
+    timeout: 6000,
+  },
+  no_verses_found: {
+    template: 'No verses found for {{bookKo}} {{chapter}}:{{verseStart}}-{{verseEnd}}',
+    timeout: 5000,
+  },
+  fetch_extra_version_failed: {
+    template: 'Failed to fetch extra version: {{error}}',
+    timeout: 6000,
+  },
+  fetch_verse_failed: {
+    template: 'Failed to fetch verse: {{error}}',
+    timeout: 6000,
+  },
+}
 
 export default class BibleSearchPlugin extends Plugin {
   settings: BibleSearchSettings
   cache: VerseCache
+  notices: PluginNotices
 
   async onload(): Promise<void> {
     await this.loadSettings()
+    this.notices = new PluginNotices(this, NOTICE_CATALOG, 'Bible')
     this.cache = new VerseCache(this.settings.cacheTtlMinutes)
 
     this.addCommand({
       id: 'search-bible-verse',
       name: 'Search verse',
       editorCallback: (editor: Editor) => {
-        new BibleSearchModal(this.app, editor, this.settings, this.cache).open()
+        new BibleSearchModal(this.app, editor, this.settings, this.cache, this.notices).open()
       },
     })
 
     this.addSettingTab(new BibleSettingsTab(this.app, this))
   }
 
+  onunload(): void {
+    this.notices?.unload()
+  }
+
   async loadSettings(): Promise<void> {
-    let data: Record<string, unknown> = {}
+    let raw: Record<string, unknown> = {}
     try {
-      data = (await this.loadData()) ?? {}
+      raw = (await this.loadData()) ?? {}
     } catch (err) {
       logger.error('Failed to load settings, using defaults', err)
-      new Notice('Bible Search: Failed to load settings. Using defaults.')
+      // PluginNotices is not yet initialised at this stage; fall back to a bare Notice.
+      new Notice('[Bible] Failed to load settings. Using defaults.')
     }
 
-    // Migrate legacy outputFormat (pre-v1.2) → formatTemplate.
-    // Only 'blockquote' needs an explicit template; 'callout' maps to the new default.
-    let migrated = false
-    if ('outputFormat' in data && !('formatTemplate' in data)) {
-      if (data.outputFormat === 'blockquote') {
-        data.formatTemplate = '> {verses}\n> — {bookKo} ({bookEn}) {range}'
-      } else if (data.outputFormat !== 'callout') {
-        logger.warn(`Unknown outputFormat "${data.outputFormat}", using default template`)
-        data.formatTemplate = DEFAULT_FORMAT_TEMPLATE
-      }
-      delete data.outputFormat
-      migrated = true
-    }
+    const migrations = [
+      (data: Record<string, unknown>): Record<string, unknown> => {
+        if ('outputFormat' in data && !('formatTemplate' in data)) {
+          const result = { ...data }
+          if (data.outputFormat === 'blockquote') {
+            result.formatTemplate = '> {verses}\n> — {bookKo} ({bookEn}) {range}'
+          } else if (data.outputFormat !== 'callout') {
+            logger.warn(`Unknown outputFormat "${String(data.outputFormat)}", using default template`)
+            result.formatTemplate = DEFAULT_FORMAT_TEMPLATE
+          }
+          delete result.outputFormat
+          return result
+        }
+        return data
+      },
+    ]
 
+    const { data, changed } = migrateSettings(raw, migrations)
     this.settings = Object.assign({}, DEFAULT_SETTINGS, data)
 
-    if (migrated) {
+    if (changed) {
       try {
         await this.saveData(this.settings)
       } catch (err) {
@@ -65,7 +105,7 @@ export default class BibleSearchPlugin extends Plugin {
       await this.saveData(this.settings)
     } catch (err) {
       logger.error('Failed to save settings', err)
-      new Notice('Bible Search: Failed to save settings.')
+      this.notices.show('save_settings_failed')
     }
   }
 }
