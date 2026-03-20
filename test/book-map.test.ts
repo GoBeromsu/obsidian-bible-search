@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { findBookBestMatch } from '../src/data/book-map'
+import { findBookBestMatch } from '../src/domain/book-map'
 
 describe('findBookBestMatch', () => {
   describe('exact match delegation', () => {

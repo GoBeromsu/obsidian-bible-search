@@ -1,6 +1,6 @@
 import { App, debounce, PluginSettingTab, Setting } from 'obsidian'
-import { SUPPORTED_VERSIONS } from '../sources/source-registry'
-import { DEFAULT_FORMAT_TEMPLATE } from '../plugin-settings'
+import { SUPPORTED_VERSIONS } from './sources/source-registry'
+import { DEFAULT_FORMAT_TEMPLATE } from '../domain/settings'
 import type BibleSearchPlugin from '../main'
 
 const KOREAN_VERSIONS = SUPPORTED_VERSIONS.filter(v => v.language === 'ko')

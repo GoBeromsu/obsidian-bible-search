@@ -1,7 +1,7 @@
 import { requestUrl } from 'obsidian'
 
-import { BIBLE_BOOKS } from '../data/book-map'
-import { BibleSource, VerseData } from './types'
+import { BIBLE_BOOKS } from '../../domain/book-map'
+import { BibleSource, VerseData } from '../../types/index'
 
 export class BsKoreaScraper implements BibleSource {
   async fetchChapter(versionCode: string, bookNr: number, chapter: number): Promise<VerseData[]> {

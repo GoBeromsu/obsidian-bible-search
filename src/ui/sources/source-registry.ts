@@ -1,4 +1,4 @@
-import { BibleSource } from './types'
+import { BibleSource } from '../../types/index'
 import { BsKoreaScraper } from './bskorea-scraper'
 import { BollsApi } from './bolls-api'
 

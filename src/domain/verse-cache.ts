@@ -1,4 +1,4 @@
-import { VerseData } from '../sources/types'
+import { VerseData } from '../types/index'
 
 interface CacheEntry {
   data: VerseData[]

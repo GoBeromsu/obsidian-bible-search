@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { DEFAULT_SETTINGS } from '../src/plugin-settings'
-import { VerseData } from '../src/sources/types'
+import { DEFAULT_SETTINGS } from '../src/domain/settings'
+import { VerseData } from '../src/types/index'
 import { formatVerses } from '../src/utils/formatter'
 import { ParsedReference } from '../src/utils/reference-parser'
 

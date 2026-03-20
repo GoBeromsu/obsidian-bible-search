@@ -1,4 +1,4 @@
-import { DEFAULT_FORMAT_TEMPLATE } from '../plugin-settings'
+import { DEFAULT_FORMAT_TEMPLATE } from '../domain/settings'
 
 export interface TemplateContext {
   bookKo: string
