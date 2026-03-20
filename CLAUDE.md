@@ -30,12 +30,12 @@ Since the repo is private, BRAT cannot fetch releases without a PAT. Use one of:
 | `pnpm build` | Production build (`tsc` + esbuild) |
 | `pnpm test` | Vitest |
 | `pnpm lint` | ESLint |
-| `pnpm release:patch` | Lint fix + version bump + push + tag (triggers CI release) |
+| `pnpm release:patch` | Run CI + version bump + push + tag (triggers CI release) |
 
 ## Release Flow
 
 `pnpm release:patch` handles the full cycle:
-1. `pnpm lint:fix`
+1. `pnpm run ci`
 2. `pnpm version patch` → bumps `package.json` + `manifest.json` (via `scripts/version.mjs`)
 3. `postversion` → `git push && git push --tags`
 4. Tag push triggers `.github/workflows/release.yml` → builds and creates GitHub release with `main.js`, `manifest.json`

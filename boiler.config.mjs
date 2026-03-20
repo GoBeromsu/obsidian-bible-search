@@ -22,12 +22,12 @@ export default {
   },
   release: {
     pluginName: 'obsidian-bible-search',
-    copyFiles: ['main.js', 'manifest.json', 'styles.css'],
+    copyFiles: ['main.js', 'manifest.json', { path: 'styles.css', required: false }],
     publishFiles: [
       '${{ env.PLUGIN_NAME }}.zip',
       'main.js',
       'manifest.json',
-      'styles.css',
+      { path: 'styles.css', required: false },
       'versions.json',
     ],
   },

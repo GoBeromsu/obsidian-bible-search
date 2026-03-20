@@ -3,6 +3,9 @@ import { BibleSearchSettings, DEFAULT_FORMAT_TEMPLATE, DEFAULT_SETTINGS } from '
 import { BibleSearchModal } from './ui/BibleSearchModal'
 import { BibleSettingsTab } from './ui/BibleSettingsTab'
 import { VerseCache } from './cache/verse-cache'
+import { PluginLogger } from './shared/plugin-logger'
+
+const logger = new PluginLogger('bible-search')
 
 export default class BibleSearchPlugin extends Plugin {
   settings: BibleSearchSettings
@@ -28,7 +31,7 @@ export default class BibleSearchPlugin extends Plugin {
     try {
       data = (await this.loadData()) ?? {}
     } catch (err) {
-      console.error('[bible-search] Failed to load settings, using defaults:', err)
+      logger.error('Failed to load settings, using defaults', err)
       new Notice('Bible Search: Failed to load settings. Using defaults.')
     }
 
@@ -39,7 +42,7 @@ export default class BibleSearchPlugin extends Plugin {
       if (data.outputFormat === 'blockquote') {
         data.formatTemplate = '> {verses}\n> — {bookKo} ({bookEn}) {range}'
       } else if (data.outputFormat !== 'callout') {
-        console.warn(`[bible-search] Unknown outputFormat "${data.outputFormat}", using default template`)
+        logger.warn(`Unknown outputFormat "${data.outputFormat}", using default template`)
         data.formatTemplate = DEFAULT_FORMAT_TEMPLATE
       }
       delete data.outputFormat
@@ -52,7 +55,7 @@ export default class BibleSearchPlugin extends Plugin {
       try {
         await this.saveData(this.settings)
       } catch (err) {
-        console.error('[bible-search] Failed to persist migration:', err)
+        logger.error('Failed to persist migration', err)
       }
     }
   }
@@ -61,7 +64,7 @@ export default class BibleSearchPlugin extends Plugin {
     try {
       await this.saveData(this.settings)
     } catch (err) {
-      console.error('[bible-search] Failed to save settings:', err)
+      logger.error('Failed to save settings', err)
       new Notice('Bible Search: Failed to save settings.')
     }
   }
