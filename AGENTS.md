@@ -26,12 +26,13 @@ Bible Search — Obsidian plugin for searching Korean/English Bible verses and i
 
 | Directory | Purpose |
 |-----------|---------|
-| `src/domain/` | Business logic — NO obsidian imports |
-| `src/ui/` | Obsidian-dependent views, modals, settings |
-| `src/ui/sources/` | Bible data source adapters (API/scraper) |
-| `src/types/` | Pure type definitions |
-| `src/utils/` | Pure utility functions |
-| `src/shared/` | Boiler-template synced files — DO NOT EDIT |
+| `src/` | Source layers (see `src/AGENTS.md`) |
+| `src/domain/` | Business logic — NO obsidian imports (see `src/domain/AGENTS.md`) |
+| `src/ui/` | Obsidian-dependent views, modals, settings (see `src/ui/AGENTS.md`) |
+| `src/ui/sources/` | Bible data source adapters (see `src/ui/sources/AGENTS.md`) |
+| `src/types/` | Pure type definitions (see `src/types/AGENTS.md`) |
+| `src/utils/` | Pure utility functions (see `src/utils/AGENTS.md`) |
+| `src/shared/` | Boiler-template synced files — DO NOT EDIT (see `src/shared/AGENTS.md`) |
 
 ## For AI Agents
 
