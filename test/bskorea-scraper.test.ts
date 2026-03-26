@@ -56,7 +56,7 @@ describe('parseVerses — Genesis 1 (bskorea fixture)', () => {
 
   it('verses are sorted by verse number', () => {
     for (let i = 1; i < verses.length; i++) {
-      expect(verses[i].verse).toBeGreaterThan(verses[i - 1].verse)
+      expect(verses[i]!.verse).toBeGreaterThan(verses[i - 1]!.verse)
     }
   })
 

@@ -16,8 +16,8 @@ export function parseReference(input: string): ParsedReference | null {
   const match = trimmed.match(CHAPTER_VERSE_RE)
   if (!match) return null
 
-  const chapter = parseInt(match[1], 10)
-  const verseStart = parseInt(match[2], 10)
+  const chapter = parseInt(match[1]!, 10)
+  const verseStart = parseInt(match[2]!, 10)
   const verseEnd = match[3] !== undefined ? parseInt(match[3], 10) : verseStart
 
   const bookPart = trimmed.slice(0, trimmed.length - match[0].length).trim()

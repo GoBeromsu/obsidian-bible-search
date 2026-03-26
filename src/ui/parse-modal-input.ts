@@ -21,7 +21,7 @@ function tryMatch(
 ): { book: BibleBookEntry; groups: RegExpMatchArray } | undefined {
   const m = text.match(re)
   if (!m) return undefined
-  const book = findBookBestMatch(m[1])
+  const book = findBookBestMatch(m[1]!)
   if (!book) return undefined
   return { book, groups: m }
 }
@@ -45,8 +45,8 @@ export function parseModalInput(input: string): ModalInputState {
     return {
       mode: 'verse',
       book,
-      chapter: parseInt(groups[2], 10),
-      filter: groups[3],
+      chapter: parseInt(groups[2]!, 10),
+      filter: groups[3]!,
       rangeEnd: parseOptionalInt(groups[4]),
     }
   }
@@ -59,7 +59,7 @@ export function parseModalInput(input: string): ModalInputState {
       return {
         mode: 'verse',
         book,
-        chapter: parseInt(groups[2], 10),
+        chapter: parseInt(groups[2]!, 10),
         filter: groups[3] ?? '',
         rangeEnd: parseOptionalInt(groups[4]),
       }
@@ -70,19 +70,19 @@ export function parseModalInput(input: string): ModalInputState {
   const koreanVerseOnly = tryMatch(trimmed, KOREAN_VERSE_ONLY_RE)
   if (koreanVerseOnly) {
     const { book, groups } = koreanVerseOnly
-    return { mode: 'verse', book, chapter: parseInt(groups[2], 10), filter: '' }
+    return { mode: 'verse', book, chapter: parseInt(groups[2]!, 10), filter: '' }
   }
 
   // Korean chapter: "요한복음 3장"
   const koreanChapter = tryMatch(trimmed, KOREAN_CHAPTER_RE)
   if (koreanChapter) {
-    return { mode: 'chapter', book: koreanChapter.book, filter: koreanChapter.groups[2] }
+    return { mode: 'chapter', book: koreanChapter.book, filter: koreanChapter.groups[2]! }
   }
 
   // Plain chapter: "창세기 1", "John 3"
   const chapter = tryMatch(trimmed, CHAPTER_ONLY_RE)
   if (chapter) {
-    return { mode: 'chapter', book: chapter.book, filter: chapter.groups[2] }
+    return { mode: 'chapter', book: chapter.book, filter: chapter.groups[2]! }
   }
 
   // Trailing space after a recognized book: "창세기 " -> chapter mode, empty filter

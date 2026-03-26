@@ -15,11 +15,11 @@ describe('parseBollsResponse', () => {
   })
 
   it('strips <S> tags from verse 1', () => {
-    expect(verses[0].text).not.toContain('<S>')
+    expect(verses[0]!.text).not.toContain('<S>')
   })
 
   it('verse 16 contains "For God so loved the world" without Strong\'s numbers', () => {
-    const v16 = verses[15]
+    const v16 = verses[15]!
     expect(v16.text).toContain('For God so loved the world')
     expect(v16.text).not.toContain('<S>')
   })
