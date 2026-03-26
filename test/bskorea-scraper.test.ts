@@ -9,7 +9,6 @@ import { parseVerses } from '../src/ui/sources/bskorea-scraper'
 import type { VerseData } from '../src/types/index'
 
 const dom = new JSDOM('')
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ;(globalThis as any).DOMParser = dom.window.DOMParser
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
