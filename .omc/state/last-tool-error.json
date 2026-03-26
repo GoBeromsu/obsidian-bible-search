@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"cp tooling/shared/eslint.base.js eslint.base.js && pnpm run ci 2>&1 | tail -5 && pnpm sync:plugins 2>&1\",\"timeout\":120000,\"description\":\"Verify boiler-template CI still passes, then sync t...",
-  "error": "Exit code 1\ncp: tooling/shared/eslint.base.js: No such file or directory",
-  "timestamp": "2026-03-26T12:09:02.726Z",
-  "retry_count": 1
-}
