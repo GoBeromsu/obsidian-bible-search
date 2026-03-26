@@ -13,6 +13,12 @@ import { PluginNotices } from '../shared/plugin-notices'
 
 const PREVIEW_MAX_LEN = 60
 
+const PLACEHOLDER = {
+  book: 'Type book name (e.g. 요, Genesis, 창세기)',
+  chapter: 'Select chapter (e.g. 3)',
+  verse: 'Select verse or type range (e.g. 16, 1-3)',
+} as const
+
 function fuzzyMatch(query: string, text: string): boolean {
   const q = query.toLowerCase()
   const t = text.toLowerCase()
@@ -79,6 +85,7 @@ export class BibleSearchModal extends SuggestModal<BibleSuggestion> {
   private cache: VerseCache
   private notices: PluginNotices
   private chapterCache: { key: string; verses: VerseData[] } | null = null
+  private renderCount = 0
 
   constructor(
     app: App,
@@ -92,21 +99,40 @@ export class BibleSearchModal extends SuggestModal<BibleSuggestion> {
     this.settings = settings
     this.cache = cache
     this.notices = notices
-    this.setPlaceholder('Type a Bible book, chapter, or verse (e.g. 요, 창세기 3, 요 3:16)')
+    this.setPlaceholder(PLACEHOLDER.book)
+  }
+
+  private updatePlaceholder(mode: 'book' | 'chapter' | 'verse'): void {
+    this.setPlaceholder(PLACEHOLDER[mode])
   }
 
   async getSuggestions(query: string): Promise<BibleSuggestion[]> {
+    this.renderCount = 0
     const state = parseModalInput(query)
 
     if (state.mode === 'book') {
+      this.updatePlaceholder('book')
       return matchBooks(state.query).map(book => ({ type: 'book' as const, book }))
     }
 
     if (state.mode === 'chapter') {
-      return buildChapterSuggestions(state.book, state.filter)
+      this.updatePlaceholder('chapter')
+      const chapters = buildChapterSuggestions(state.book, state.filter)
+      // Auto-advance when exactly one chapter matches
+      if (chapters.length === 1) {
+        const only = chapters[0]!
+        if (only.type !== 'chapter') return chapters
+        const newValue = `${only.book.ko} ${only.chapter}:`
+        this.inputEl.value = newValue
+        this.inputEl.setSelectionRange(newValue.length, newValue.length)
+        this.inputEl.dispatchEvent(new Event('input'))
+        return []
+      }
+      return chapters
     }
 
     // verse mode — async fetch
+    this.updatePlaceholder('verse')
     const { book, chapter, filter, rangeEnd } = state
     const cacheKey = `${book.nr}:${chapter}`
     let verses: VerseData[] | null = null
@@ -161,20 +187,27 @@ export class BibleSearchModal extends SuggestModal<BibleSuggestion> {
   }
 
   renderSuggestion(item: BibleSuggestion, el: HTMLElement): void {
+    const isFirst = this.renderCount === 0
+    this.renderCount++
+
     if (item.type === 'book') {
       el.createEl('span', { text: `${item.book.ko} (${item.book.en})` })
+      if (isFirst) el.createEl('span', { text: '↵ select', cls: 'bible-search-hint' })
       return
     }
     if (item.type === 'chapter') {
       el.createEl('span', { text: `${item.chapter}장` })
+      if (isFirst) el.createEl('span', { text: '↵ select', cls: 'bible-search-hint' })
       return
     }
     if (item.type === 'verse') {
       el.createEl('span', { text: `${item.verse}절  ${item.text}` })
+      if (isFirst) el.createEl('span', { text: '↵ insert', cls: 'bible-search-hint' })
       return
     }
     if (item.type === 'range') {
       el.createEl('span', { text: `${item.verseStart}-${item.verseEnd}절  ${item.preview}` })
+      if (isFirst) el.createEl('span', { text: '↵ insert', cls: 'bible-search-hint' })
     }
   }
 
