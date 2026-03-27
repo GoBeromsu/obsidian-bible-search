@@ -8,7 +8,7 @@ export class BollsApi implements BibleSource {
     if (response.status !== 200) {
       throw new Error(`Failed to fetch from bolls.life: HTTP ${response.status}`)
     }
-    return parseBollsResponse(response.json, chapter)
+    return parseBollsResponse(response.json as Array<{ pk: number; verse: number; text: string }>, chapter)
   }
 }
 

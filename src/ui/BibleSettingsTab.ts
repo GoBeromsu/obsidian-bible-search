@@ -19,7 +19,7 @@ export class BibleSettingsTab extends PluginSettingTab {
     containerEl.empty()
 
     new Setting(containerEl)
-      .setName('기본 역본 (Default version)')
+      .setName('Default version (기본 역본)')
       .setDesc('Select the default Bible version for searches and {verses} token')
       .addDropdown(dropdown => {
         for (const v of SUPPORTED_VERSIONS) {
@@ -33,7 +33,7 @@ export class BibleSettingsTab extends PluginSettingTab {
       })
 
     new Setting(containerEl)
-      .setName('한국어 성경 (Korean Bible)')
+      .setName('Korean version')
       .setDesc('Korean version for {versesKo} token')
       .addDropdown(dropdown => {
         for (const v of KOREAN_VERSIONS) {
@@ -47,7 +47,7 @@ export class BibleSettingsTab extends PluginSettingTab {
       })
 
     new Setting(containerEl)
-      .setName('영어 성경 (English Bible)')
+      .setName('English version')
       .setDesc('English version for {versesEn} token')
       .addDropdown(dropdown => {
         for (const v of ENGLISH_VERSIONS) {
@@ -83,7 +83,7 @@ export class BibleSettingsTab extends PluginSettingTab {
       .setName('Callout type')
       .setDesc('The callout type identifier used by {calloutType} token (e.g. bible, quote)')
       .addText(text => {
-        text.setPlaceholder('bible')
+        text.setPlaceholder('Bible')
         text.setValue(this.plugin.settings.calloutType)
         text.onChange(async (value) => {
           this.plugin.settings.calloutType = value || 'bible'

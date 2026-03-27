@@ -64,11 +64,11 @@ export default class BibleSearchPlugin extends Plugin {
   async loadSettings(): Promise<void> {
     let raw: Record<string, unknown> = {}
     try {
-      raw = (await this.loadData()) ?? {}
+      raw = ((await this.loadData()) as Record<string, unknown> | null) ?? {}
     } catch (err) {
       logger.error('Failed to load settings, using defaults', err)
       // PluginNotices is not yet initialised at this stage; fall back to a bare Notice.
-      new Notice('[Bible] Failed to load settings. Using defaults.')
+      new Notice('Failed to load settings. Using defaults.')
     }
 
     const migrations = [

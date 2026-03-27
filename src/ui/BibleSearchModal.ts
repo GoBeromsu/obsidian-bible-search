@@ -237,7 +237,13 @@ export class BibleSearchModal extends SuggestModal<BibleSuggestion> {
     super.selectSuggestion(value, evt)
   }
 
-  async onChooseSuggestion(item: BibleSuggestion, _evt: MouseEvent | KeyboardEvent): Promise<void> {
+  onChooseSuggestion(item: BibleSuggestion, _evt: MouseEvent | KeyboardEvent): void {
+    this.chooseSuggestion(item).catch((err: unknown) => {
+      console.error('Failed to insert Bible verse', err)
+    })
+  }
+
+  private async chooseSuggestion(item: BibleSuggestion): Promise<void> {
     if (item.type === 'book' || item.type === 'chapter') return
 
     let ref: ParsedReference
