@@ -1,5 +1,4 @@
 import { App, SuggestModal, Editor } from 'obsidian'
-import { BibleBookEntry, BIBLE_BOOKS } from '../domain/book-map'
 import { BibleSuggestion } from './bible-suggestion'
 import {
   buildChapterSuggestions,
