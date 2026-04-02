@@ -1,0 +1,56 @@
+import { describe, expect, it } from 'vitest'
+
+import { BIBLE_BOOKS } from '../src/domain/book-map'
+import {
+  buildChapterSuggestions,
+  buildRangeSuggestion,
+  buildVerseSuggestions,
+  matchBooks,
+} from '../src/ui/bible-search-suggestions'
+
+const JOHN = BIBLE_BOOKS.find(book => book.ko === '요한복음')!
+
+describe('bible-search-suggestions', () => {
+  it('matches books across Korean and English fuzzy queries', () => {
+    expect(matchBooks('요')).toEqual(expect.arrayContaining([JOHN]))
+    expect(matchBooks('Jhn')).toEqual(expect.arrayContaining([JOHN]))
+  })
+
+  it('builds chapter suggestions from prefix filters', () => {
+    const suggestions = buildChapterSuggestions(JOHN, '1')
+    expect(suggestions[0]).toEqual({ type: 'chapter', book: JOHN, chapter: 1 })
+    expect(suggestions.every(item => item.type === 'chapter' && String(item.chapter).startsWith('1'))).toBe(true)
+  })
+
+  it('builds a truncated range preview when verses are present', () => {
+    const suggestions = buildRangeSuggestion(JOHN, 3, 16, 17, [
+      { chapter: 3, verse: 16, text: 'A'.repeat(40) },
+      { chapter: 3, verse: 17, text: 'B'.repeat(40) },
+    ])
+    expect(suggestions).toHaveLength(1)
+    expect(suggestions[0]).toMatchObject({
+      type: 'range',
+      book: JOHN,
+      chapter: 3,
+      verseStart: 16,
+      verseEnd: 17,
+    })
+    if (suggestions[0]?.type === 'range') {
+      expect(suggestions[0].preview.endsWith('...')).toBe(true)
+    }
+  })
+
+  it('filters and truncates verse suggestions', () => {
+    const suggestions = buildVerseSuggestions(JOHN, 3, '1', [
+      { chapter: 3, verse: 1, text: 'short' },
+      { chapter: 3, verse: 16, text: 'C'.repeat(80) },
+      { chapter: 3, verse: 8, text: 'ignored' },
+    ])
+    expect(suggestions).toHaveLength(2)
+    expect(suggestions[0]).toMatchObject({ type: 'verse', verse: 1, text: 'short' })
+    expect(suggestions[1]).toMatchObject({ type: 'verse', verse: 16 })
+    if (suggestions[1]?.type === 'verse') {
+      expect(suggestions[1].text.endsWith('...')).toBe(true)
+    }
+  })
+})

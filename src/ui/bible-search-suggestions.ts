@@ -1,0 +1,104 @@
+import { BibleBookEntry, BIBLE_BOOKS } from '../domain/book-map'
+import { VerseData } from '../types/index'
+import { BibleSuggestion } from './bible-suggestion'
+
+const PREVIEW_MAX_LEN = 60
+
+function fuzzyMatch(query: string, text: string): boolean {
+  const q = query.toLowerCase()
+  const t = text.toLowerCase()
+  let qi = 0
+  for (let ti = 0; ti < t.length && qi < q.length; ti++) {
+    if (q[qi] === t[ti]) qi++
+  }
+  return qi === q.length
+}
+
+function truncate(text: string, max: number): string {
+  return text.length > max ? text.slice(0, max) + '...' : text
+}
+
+export function matchBooks(query: string): BibleBookEntry[] {
+  if (!query) return BIBLE_BOOKS
+  return BIBLE_BOOKS.filter(
+    b =>
+      fuzzyMatch(query, b.ko) ||
+      fuzzyMatch(query, b.koAbbr) ||
+      fuzzyMatch(query, b.en) ||
+      fuzzyMatch(query, b.enAbbr),
+  )
+}
+
+export function buildChapterSuggestions(
+  book: BibleBookEntry,
+  filter: string,
+): BibleSuggestion[] {
+  const items: BibleSuggestion[] = []
+  for (let ch = 1; ch <= book.maxChapter; ch++) {
+    if (filter === '' || String(ch).startsWith(filter)) {
+      items.push({ type: 'chapter', book, chapter: ch })
+    }
+  }
+  return items
+}
+
+export function buildRangeSuggestion(
+  book: BibleBookEntry,
+  chapter: number,
+  verseStart: number,
+  verseEnd: number,
+  verses: VerseData[],
+): BibleSuggestion[] {
+  const selected = verses.filter(v => v.verse >= verseStart && v.verse <= verseEnd)
+  if (selected.length === 0) return []
+  const preview = selected.map(v => v.text).join(' ')
+  return [{
+    type: 'range',
+    book,
+    chapter,
+    verseStart,
+    verseEnd,
+    preview: truncate(preview, PREVIEW_MAX_LEN),
+  }]
+}
+
+export function buildVerseSuggestions(
+  book: BibleBookEntry,
+  chapter: number,
+  filter: string,
+  verses: VerseData[],
+): BibleSuggestion[] {
+  return verses
+    .filter(v => filter === '' || String(v.verse).startsWith(filter))
+    .map(v => ({
+      type: 'verse' as const,
+      book,
+      chapter,
+      verse: v.verse,
+      text: truncate(v.text, PREVIEW_MAX_LEN),
+    }))
+}
+
+export function renderBibleSuggestion(
+  item: BibleSuggestion,
+  el: HTMLElement,
+  isFirst: boolean,
+): void {
+  if (item.type === 'book') {
+    el.createEl('span', { text: `${item.book.ko} (${item.book.en})` })
+    if (isFirst) el.createEl('span', { text: '↵ select', cls: 'bible-search-hint' })
+    return
+  }
+  if (item.type === 'chapter') {
+    el.createEl('span', { text: `${item.chapter}장` })
+    if (isFirst) el.createEl('span', { text: '↵ select', cls: 'bible-search-hint' })
+    return
+  }
+  if (item.type === 'verse') {
+    el.createEl('span', { text: `${item.verse}절  ${item.text}` })
+    if (isFirst) el.createEl('span', { text: '↵ insert', cls: 'bible-search-hint' })
+    return
+  }
+  el.createEl('span', { text: `${item.verseStart}-${item.verseEnd}절  ${item.preview}` })
+  if (isFirst) el.createEl('span', { text: '↵ insert', cls: 'bible-search-hint' })
+}
