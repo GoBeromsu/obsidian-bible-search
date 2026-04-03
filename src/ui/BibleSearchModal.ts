@@ -16,6 +16,7 @@ import { VerseCache } from '../domain/verse-cache'
 import { VerseData } from '../types/index'
 import { BibleSearchSettings } from '../domain/settings'
 import { detectRequiredFetches } from '../utils/resolve-template'
+import { FetchTimeoutError } from '../utils/resilient-fetch'
 import { PluginNotices } from '../shared/plugin-notices'
 
 const PLACEHOLDER = {
@@ -92,11 +93,15 @@ export class BibleSearchModal extends SuggestModal<BibleSuggestion> {
           this.cache, this.settings.cacheEnabled,
         )
       } catch (err) {
-        this.notices.show('fetch_chapter_failed', {
-          bookKo: book.ko,
-          chapter,
-          error: err instanceof Error ? err.message : String(err),
-        })
+        if (err instanceof FetchTimeoutError) {
+          this.notices.show('fetch_timeout', { source: 'Bible', seconds: 10 })
+        } else {
+          this.notices.show('fetch_chapter_failed', {
+            bookKo: book.ko,
+            chapter,
+            error: err instanceof Error ? err.message : String(err),
+          })
+        }
         return []
       }
 
@@ -210,9 +215,13 @@ export class BibleSearchModal extends SuggestModal<BibleSuggestion> {
       const formatted = formatVerses(selected, ref, this.settings, extraVerses)
       this.editor.replaceSelection(formatted)
     } catch (error) {
-      this.notices.show('fetch_verse_failed', {
-        error: error instanceof Error ? error.message : String(error),
-      })
+      if (error instanceof FetchTimeoutError) {
+        this.notices.show('fetch_timeout', { source: 'Bible', seconds: 10 })
+      } else {
+        this.notices.show('fetch_verse_failed', {
+          error: error instanceof Error ? error.message : String(error),
+        })
+      }
     }
   }
 }

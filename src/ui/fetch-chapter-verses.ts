@@ -18,7 +18,7 @@ export async function fetchChapterVerses(
   }
 
   const verses = await source.fetchChapter(sourceVersion, bookNr, chapter)
-  if (cacheEnabled) {
+  if (cacheEnabled && verses.length > 0) {
     cache.set(version, bookNr, chapter, verses)
   }
   return verses

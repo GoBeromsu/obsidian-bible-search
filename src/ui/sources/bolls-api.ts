@@ -1,13 +1,21 @@
 import { requestUrl } from 'obsidian'
 import { BibleSource, VerseData } from '../../types/index'
+import { resilientFetch, FetchFn } from '../../utils/resilient-fetch'
 
 export class BollsApi implements BibleSource {
+  private readonly fetchFn: FetchFn
+
+  constructor(fetchFn?: FetchFn) {
+    this.fetchFn = fetchFn ?? (params => requestUrl(params))
+  }
+
   async fetchChapter(versionCode: string, bookNr: number, chapter: number): Promise<VerseData[]> {
     const url = `https://bolls.life/get-chapter/${versionCode}/${bookNr}/${chapter}/`
-    const response = await requestUrl({ url, method: 'GET', throw: false })
-    if (response.status !== 200) {
-      throw new Error(`Failed to fetch from bolls.life: HTTP ${response.status}`)
-    }
+    const response = await resilientFetch({
+      url,
+      fetchFn: this.fetchFn,
+      validateResponse: r => Array.isArray(r.json) && r.json.length > 0 && 'verse' in r.json[0],
+    })
     return parseBollsResponse(response.json as Array<{ pk: number; verse: number; text: string }>, chapter)
   }
 }

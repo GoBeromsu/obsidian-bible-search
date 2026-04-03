@@ -2,18 +2,32 @@ import { requestUrl } from 'obsidian'
 
 import { BIBLE_BOOKS } from '../../domain/book-map'
 import { BibleSource, VerseData } from '../../types/index'
+import { resilientFetch, FetchFn } from '../../utils/resilient-fetch'
+
+const BROWSER_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36'
 
 export class BsKoreaScraper implements BibleSource {
+  private readonly fetchFn: FetchFn
+
+  constructor(fetchFn?: FetchFn) {
+    this.fetchFn = fetchFn ?? (params => requestUrl(params))
+  }
+
   async fetchChapter(versionCode: string, bookNr: number, chapter: number): Promise<VerseData[]> {
     const book = BIBLE_BOOKS.find(b => b.nr === bookNr)
     if (!book) throw new Error(`Unknown book number: ${bookNr}`)
 
     const url = `https://www.bskorea.or.kr/bible/korbibReadpage.php?version=${versionCode}&book=${book.bskCode}&chap=${chapter}`
 
-    const response = await requestUrl({ url, method: 'GET', throw: false })
-    if (response.status !== 200) {
-      throw new Error(`Failed to fetch from bskorea: HTTP ${response.status}`)
-    }
+    const response = await resilientFetch({
+      url,
+      fetchFn: this.fetchFn,
+      headers: {
+        'User-Agent': BROWSER_UA,
+        'Referer': 'https://www.bskorea.or.kr/',
+      },
+      validateResponse: r => r.text.includes('tdBible1'),
+    })
 
     return parseVerses(response.text, chapter)
   }
@@ -40,13 +54,15 @@ function cleanVerseText(parentSpan: Element): string {
     el.remove()
   }
 
-  return (clone.textContent ?? '').trim()
+  return (clone.textContent ?? '')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 export function parseVerses(html: string, chapter: number): VerseData[] {
   const doc = new DOMParser().parseFromString(html, 'text/html')
   const container = doc.querySelector('#tdBible1')
-  if (!container) return []
+  if (!container) throw new Error('BSKorea response missing #tdBible1 — page structure may have changed')
 
   const numberSpans = Array.from(container.querySelectorAll('span.number'))
   const verses: VerseData[] = []

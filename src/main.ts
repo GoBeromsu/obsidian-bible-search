@@ -34,6 +34,10 @@ const NOTICE_CATALOG: NoticeCatalog = {
     template: 'Failed to fetch verse: {{error}}',
     timeout: 6000,
   },
+  fetch_timeout: {
+    template: '{{source}} server timed out after {{seconds}}s — retrying may help',
+    timeout: 6000,
+  },
 }
 
 export default class BibleSearchPlugin extends Plugin {
