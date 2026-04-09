@@ -96,7 +96,8 @@ Preferred direction:
 
 ```text
 utils + types -> domain -> ui -> main
-shared -> all layers (import-only)
+domain -> ui
+ui -> main
 ```
 
 The key invariant is still:
