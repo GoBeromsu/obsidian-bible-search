@@ -74,19 +74,28 @@ gh release download --repo GoBeromsu/obsidian-bible-search \
 | Testing | Vitest |
 | Linting | ESLint + Husky + lint-staged |
 
+## Pilot Docs
+
+This repo is the first pilot for the workspace's minimal shared-contract model.
+
+- `docs/Architecture.md` — repo-specific architecture and boundary map
+- `docs/Harness.md` — verification and evidence expectations
+- `docs/Pilot-Alignment.md` — what stays shared vs local under the pilot
+- `docs/runbooks/runtime-smoke.md` — concrete local smoke proof steps
+- `docs/contracts/source-adapter-contract.md` — local adapter invariants and failure buckets
+
 ## Project Structure
 
 ```
 obsidian-bible-search/
 ├── src/
-│   ├── main.ts              # Plugin entry point (BibleSearchPlugin)
-│   ├── plugin-settings.ts   # Settings interface + defaults
-│   ├── cache/               # Verse cache (in-memory with TTL)
-│   ├── data/                # Bible book data and mappings
-│   ├── sources/             # Data source adapters (Bolls API, BSKorea scraper)
-│   ├── ui/                  # Search modal, settings tab, suggestion renderer
-│   ├── utils/               # Utility functions
-│   └── shared/              # Shared utilities (plugin-logger, plugin-notices)
+│   ├── main.ts              # Composition root
+│   ├── domain/              # Settings, book map, verse cache
+│   ├── ui/                  # Modal, settings tab, source adapters
+│   ├── utils/               # Parsing, formatting, resilient fetch
+│   ├── types/               # Pure type definitions
+│   └── shared/              # Legacy shared helpers; new shared impl is exception-only
+├── docs/                    # Repo-local architecture / harness / pilot prep docs
 ├── scripts/                 # dev.mjs, version.mjs, release.mjs
 ├── boiler.config.mjs        # Per-repo config
 └── manifest.json            # Obsidian plugin manifest
@@ -102,6 +111,12 @@ pnpm test         # Vitest unit tests
 pnpm lint         # ESLint
 pnpm run ci       # build + lint + test
 ```
+
+## Notes for the Workspace Pilot
+
+- `open-connections` is reference-only for this pilot.
+- Shared family surfaces are docs, contracts, and harness expectations.
+- Implementation code and deployment-line behavior remain repo-local by default.
 
 ## License
 
