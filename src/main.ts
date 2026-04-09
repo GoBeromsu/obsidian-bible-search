@@ -3,9 +3,10 @@ import { BibleSearchSettings, DEFAULT_FORMAT_TEMPLATE, DEFAULT_SETTINGS } from '
 import { BibleSearchModal } from './ui/BibleSearchModal'
 import { BibleSettingsTab } from './ui/BibleSettingsTab'
 import { VerseCache } from './domain/verse-cache'
-import { PluginLogger } from './shared/plugin-logger'
-import { PluginNotices, NoticeCatalog } from './shared/plugin-notices'
-import { migrateSettings } from './shared/settings-migration'
+import { PluginLogger } from './ui/plugin-logger'
+import { PluginNotices } from './ui/plugin-notices'
+import type { NoticeCatalog } from './ui/plugin-notice-types'
+import { migrateSettings } from './domain/settings-migration'
 
 const logger = new PluginLogger('bible-search')
 

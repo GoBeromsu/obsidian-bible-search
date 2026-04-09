@@ -78,22 +78,17 @@ Responsibilities:
 
 These helpers should stay free of Obsidian-specific assumptions.
 
-### `src/shared/`
+### Localized former shared helpers
 
-Shared family surface from `obsidian-boiler-template`.
+This pilot repo no longer depends on a `src/shared/` implementation directory.
 
-Current contents:
-
-- logger
-- notices
-- debounce controller
-- settings migration helper
-- shared CSS base
+Helpers that were previously inherited as shared implementation have been localized into repo-owned modules where needed.
 
 Pilot rule:
 
-- existing shared helpers may remain as legacy exceptions
-- new shared implementation code should not be added by default
+- keep contract and harness sharing
+- keep implementation ownership local
+- do not reintroduce a shared implementation directory by default
 
 ## Dependency Direction
 

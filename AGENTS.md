@@ -32,7 +32,6 @@ Bible Search — Obsidian plugin for searching Korean/English Bible verses and i
 | `src/ui/sources/` | Bible data source adapters (see `src/ui/sources/AGENTS.md`) |
 | `src/types/` | Pure type definitions (see `src/types/AGENTS.md`) |
 | `src/utils/` | Pure utility functions (see `src/utils/AGENTS.md`) |
-| `src/shared/` | Boiler-template synced files — DO NOT EDIT (see `src/shared/AGENTS.md`) |
 
 ## For AI Agents
 
@@ -40,7 +39,7 @@ Bible Search — Obsidian plugin for searching Korean/English Bible verses and i
 - 4-layer architecture: `domain/` must not import `obsidian`
 - `source-registry.ts` is the adapter registry — add new Bible sources there, not inline
 - `isDesktopOnly: false` — avoid Node.js-specific APIs; use `requestUrl` for HTTP (not `fetch` or `node:http`)
-- `src/shared/` synced from `obsidian-boiler-template` — never edit directly
+- this pilot keeps implementation local; do not introduce new shared implementation surfaces by default
 
 ### Testing Requirements
 ```bash
@@ -55,7 +54,7 @@ pnpm run lint   # ESLint — 0 errors required
 ## Dependencies
 
 ### Internal
-- `obsidian-boiler-template` — source of truth for `src/shared/`
+- workspace contract docs define shared surfaces; this repo keeps implementation local by default
 
 ### External
 - `obsidian` — Obsidian Plugin API

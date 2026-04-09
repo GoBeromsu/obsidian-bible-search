@@ -68,12 +68,23 @@ export class Setting {
   addDropdown(_cb: any) { return this }
 }
 export class Notice {
-  constructor(_msg: string, _timeout?: number) {}
+  message: unknown
+  timeout?: number
+  hidden = false
+  constructor(msg: unknown, timeout?: number) {
+    this.message = msg
+    this.timeout = timeout
+  }
+  setMessage(msg: unknown) { this.message = msg }
+  hide() { this.hidden = true }
 }
 export declare class App {
   workspace: any
 }
 export const Platform = { isDesktop: true, isMobile: false }
+export function setIcon(el: HTMLElement, icon: string) {
+  el.setAttribute('data-icon', icon)
+}
 
 export async function requestUrl(_req: {
   url: string

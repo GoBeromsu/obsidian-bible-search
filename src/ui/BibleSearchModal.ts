@@ -17,7 +17,7 @@ import { VerseData } from '../types/index'
 import { BibleSearchSettings } from '../domain/settings'
 import { detectRequiredFetches } from '../utils/resolve-template'
 import { FetchTimeoutError } from '../utils/resilient-fetch'
-import { PluginNotices } from '../shared/plugin-notices'
+import { PluginNotices } from './plugin-notices'
 
 const PLACEHOLDER = {
   book: 'Type book name (e.g. 요, Genesis, 창세기)',

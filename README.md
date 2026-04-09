@@ -94,7 +94,7 @@ obsidian-bible-search/
 │   ├── ui/                  # Modal, settings tab, source adapters
 │   ├── utils/               # Parsing, formatting, resilient fetch
 │   ├── types/               # Pure type definitions
-│   └── shared/              # Legacy shared helpers; new shared impl is exception-only
+│   └── (no shared impl dir) # Pilot keeps implementation local by default
 ├── docs/                    # Repo-local architecture / harness / pilot prep docs
 ├── scripts/                 # dev.mjs, version.mjs, release.mjs
 ├── boiler.config.mjs        # Per-repo config
@@ -117,6 +117,7 @@ pnpm run ci       # build + lint + test
 - `open-connections` is reference-only for this pilot.
 - Shared family surfaces are docs, contracts, and harness expectations.
 - Implementation code and deployment-line behavior remain repo-local by default.
+- Former legacy shared helpers have been localized in this repo.
 
 ## License
 

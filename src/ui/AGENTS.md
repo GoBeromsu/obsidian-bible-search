@@ -31,7 +31,7 @@ All Obsidian-dependent code — modals, settings tabs, commands, and Bible data 
 ## Dependencies
 
 - **Inbound**: `main.ts` opens modal and wires settings/cache.
-- **Outbound**: `domain/` (cache, settings, book map), `utils/` (parsers, formatters), `types/`, `shared/` (notices, logger), `obsidian`.
+- **Outbound**: `domain/` (cache, settings, book map), `utils/` (parsers, formatters), `types/`, sibling `ui/` helpers (notices, logger), `obsidian`.
 - **External**: `obsidian` (SuggestModal, Editor, App, requestUrl).
 
 ## Key Components

@@ -5,7 +5,7 @@
 
 ## Purpose
 
-Container for the main plugin source code organized into four logical layers (domain, ui, types, utils, shared) plus the composition root (main.ts). Follows strict dependency direction to keep business logic testable and UI concerns isolated from domain logic.
+Container for the main plugin source code organized into four logical layers (domain, ui, types, utils) plus the composition root (main.ts). Follows strict dependency direction to keep business logic testable and UI concerns isolated from domain logic.
 
 ## Key Files
 
@@ -21,7 +21,6 @@ Container for the main plugin source code organized into four logical layers (do
 | `ui/` | Obsidian-dependent UI — modals, settings tabs, search interfaces | `AGENTS.md` |
 | `types/` | Pure type definitions — interfaces, no obsidian imports | `AGENTS.md` |
 | `utils/` | Pure utility functions — parsing, formatting, templates (zero external dependencies) | `AGENTS.md` |
-| `shared/` | Boiler-template synced code — plugin patterns, logger, notices (deterministic, read-only) | `AGENTS.md` |
 
 ## For AI Agents
 
@@ -40,15 +39,13 @@ Container for the main plugin source code organized into four logical layers (do
 ```
 utils/  ──┐
 types/  ──┼── domain/ ── ui/ ── main.ts
-shared/ ─┘               │
-                         └── shared/
+          └──────────────┘
 ```
 
 - `utils/` imports **nothing** from project.
 - `types/` imports **nothing** from project.
 - `domain/` imports from `utils/` and `types/` only — **never** `obsidian`.
-- `ui/` imports from `domain/`, `utils/`, `types/`, `shared/`, and `obsidian`.
-- `shared/` is import-only (read-only from all layers).
+- `ui/` imports from `domain/`, `utils/`, `types/`, and `obsidian`.
 - `main.ts` (composition root) imports from all layers.
 
 **ESLint enforcement**: `eslint.base.js` prevents `domain/`, `types/`, and `utils/` from importing `obsidian`. If code needs Obsidian API, it belongs in `ui/`, not `domain/`.
