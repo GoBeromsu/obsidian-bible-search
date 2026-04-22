@@ -20,7 +20,7 @@ export class BibleSettingsTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('Default version (기본 역본)')
-      .setDesc('Select the default Bible version for searches and {verses} token')
+      .setDesc('Select the default Bible version for searches and {verses} token.')
       .addDropdown(dropdown => {
         for (const v of SUPPORTED_VERSIONS) {
           dropdown.addOption(v.code, v.label)
@@ -34,7 +34,7 @@ export class BibleSettingsTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('Korean version')
-      .setDesc('Korean version for {versesKo} token')
+      .setDesc('Korean version for {versesKo} token.')
       .addDropdown(dropdown => {
         for (const v of KOREAN_VERSIONS) {
           dropdown.addOption(v.code, v.label)
@@ -48,7 +48,7 @@ export class BibleSettingsTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('English version')
-      .setDesc('English version for {versesEn} token')
+      .setDesc('English version for {versesEn} token.')
       .addDropdown(dropdown => {
         for (const v of ENGLISH_VERSIONS) {
           dropdown.addOption(v.code, v.label)
@@ -65,7 +65,7 @@ export class BibleSettingsTab extends PluginSettingTab {
       .setDesc(
         'Template for inserted verses. Available tokens: ' +
         '{bookKo}, {bookEn}, {chapter}, {range}, {verses}, {versesKo}, {versesEn}, ' +
-        '{version}, {versionKo}, {versionEn}, {calloutType}',
+        '{version}, {versionKo}, {versionEn}, {calloutType}.',
       )
       .addTextArea(textArea => {
         textArea.setPlaceholder(DEFAULT_FORMAT_TEMPLATE)
@@ -81,7 +81,7 @@ export class BibleSettingsTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('Callout type')
-      .setDesc('The callout type identifier used by {calloutType} token (e.g. bible, quote)')
+      .setDesc('The callout type identifier used by {calloutType} token (e.g. bible, quote).')
       .addText(text => {
         text.setPlaceholder('Bible')
         text.setValue(this.plugin.settings.calloutType)
@@ -93,7 +93,7 @@ export class BibleSettingsTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('Show verse numbers')
-      .setDesc('Show verse numbers when inserting multiple verses')
+      .setDesc('Show verse numbers when inserting multiple verses.')
       .addToggle(toggle => {
         toggle.setValue(this.plugin.settings.showVerseNumbers)
         toggle.onChange(async (value) => {
@@ -104,7 +104,7 @@ export class BibleSettingsTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('Enable cache')
-      .setDesc('Cache fetched chapters in memory')
+      .setDesc('Cache fetched chapters in memory.')
       .addToggle(toggle => {
         toggle.setValue(this.plugin.settings.cacheEnabled)
         toggle.onChange(async (value) => {
