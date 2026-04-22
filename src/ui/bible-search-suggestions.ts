@@ -86,19 +86,19 @@ export function renderBibleSuggestion(
 ): void {
   if (item.type === 'book') {
     el.createEl('span', { text: `${item.book.ko} (${item.book.en})` })
-    if (isFirst) el.createEl('span', { text: '↵ select', cls: 'bible-search-hint' })
+    if (isFirst) el.createEl('span', { text: 'Enter to select', cls: 'bible-search-hint' })
     return
   }
   if (item.type === 'chapter') {
     el.createEl('span', { text: `${item.chapter}장` })
-    if (isFirst) el.createEl('span', { text: '↵ select', cls: 'bible-search-hint' })
+    if (isFirst) el.createEl('span', { text: 'Enter to select', cls: 'bible-search-hint' })
     return
   }
   if (item.type === 'verse') {
     el.createEl('span', { text: `${item.verse}절  ${item.text}` })
-    if (isFirst) el.createEl('span', { text: '↵ insert', cls: 'bible-search-hint' })
+    if (isFirst) el.createEl('span', { text: 'Enter to insert', cls: 'bible-search-hint' })
     return
   }
   el.createEl('span', { text: `${item.verseStart}-${item.verseEnd}절  ${item.preview}` })
-  if (isFirst) el.createEl('span', { text: '↵ insert', cls: 'bible-search-hint' })
+  if (isFirst) el.createEl('span', { text: 'Enter to insert', cls: 'bible-search-hint' })
 }
