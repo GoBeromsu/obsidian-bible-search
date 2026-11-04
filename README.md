@@ -2,7 +2,7 @@
 
 Search Korean/English Bible verses and insert with configurable template format.
 
-![Searching for John 3:16 in the Multilingual Bible Search modal and inserting it as a quote with a working [[John 3|John 3:16]] link, the Korean text and the English (ESV) text.](https://raw.githubusercontent.com/Xia-Ataraxia/obsidian-bible-search/main/docs/assets/demo.webp)
+![Searching for John 3:16 in the Multilingual Bible Search modal and inserting it as a quote with a working [[John 3|John 3:16]] link, the Korean text and the English (ESV) text.](https://raw.githubusercontent.com/GoBeromsu/obsidian-bible-search/main/docs/assets/demo.webp)
 
 ## Features
 
@@ -24,7 +24,7 @@ Settings: Korean and English version, format template, callout type, show verse 
 
 This plugin is not in the Community plugins directory because of copyright concerns with Bible text.
 
-**Manual**: download `main.js`, `manifest.json` and `styles.css` from the [latest release](https://github.com/Xia-Ataraxia/obsidian-bible-search/releases/latest) into `<vault>/<configDir>/plugins/multilingual-bible-search/`, then enable the plugin. `<configDir>` is your vault's configuration folder (`.obsidian` by default).
+**Manual**: download `main.js`, `manifest.json` and `styles.css` from the [latest release](https://github.com/GoBeromsu/obsidian-bible-search/releases/latest) into `<vault>/<configDir>/plugins/multilingual-bible-search/`, then enable the plugin. `<configDir>` is your vault's configuration folder (`.obsidian` by default).
 
 **Upgrading from the old id**: the plugin id changed from `obsidian-bible-search` to `multilingual-bible-search` before a Community listing, because ids may not contain "obsidian". If you installed it manually or through BRAT, reinstall it. Your settings stay in the old `obsidian-bible-search` folder, so re-enter them or copy its `data.json` into the new folder, then remove the old plugin.
 
